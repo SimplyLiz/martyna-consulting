@@ -2,7 +2,7 @@
 const navLinks = [
   { href: '/leistungen', label: 'Leistungen' },
   { href: '/ueber-martyna', label: 'Über mich' },
-  { href: '/termin', label: 'Termin buchen' },
+  { href: '/termin', label: 'Termin buchen', bold: true },
   { href: '/kontakt', label: 'Kontakt' },
 ];
 
@@ -23,7 +23,7 @@ const currentPath = Astro.url.pathname;
       {navLinks.map(link => (
         <a
           href={link.href}
-          class={`nav-link ${currentPath.startsWith(link.href) ? 'active' : ''}`}
+          class={`nav-link ${currentPath.startsWith(link.href) ? 'active' : ''} ${link.bold ? 'nav-link-bold' : ''}`}
         >
           {link.label}
         </a>
@@ -54,6 +54,7 @@ const currentPath = Astro.url.pathname;
     -webkit-backdrop-filter: blur(12px);
     border-bottom-color: var(--border);
   }
+
 
   .header-inner {
     display: flex;
@@ -146,9 +147,25 @@ const currentPath = Astro.url.pathname;
     transform: scaleX(1);
   }
 
+  .nav-link-bold {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: none;
+    color: var(--text);
+  }
+
+  .nav-link-bold:hover { color: var(--gold); }
+
   .nav-cta {
-    padding: 0.6rem 1.4rem;
-    font-size: 0.72rem;
+    padding: 0.55rem 1.5rem;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: 0.04em;
+    text-transform: none;
     margin-left: 1rem;
   }
 
@@ -160,6 +177,8 @@ const currentPath = Astro.url.pathname;
     border: none;
     cursor: pointer;
     padding: 4px;
+    position: relative;
+    z-index: 101;
   }
 
   .menu-toggle span {
@@ -177,23 +196,52 @@ const currentPath = Astro.url.pathname;
     .main-nav {
       position: fixed;
       top: 72px;
-      left: 0;
       right: 0;
-      bottom: 0;
-      background: rgba(9, 9, 15, 0.98);
-      backdrop-filter: blur(20px);
+      width: 260px;
+      z-index: 99;
+      background: rgb(9, 9, 15);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-right: none;
       flex-direction: column;
-      justify-content: center;
-      gap: 2.5rem;
-      transform: translateX(100%);
-      transition: transform 300ms ease;
+      align-items: flex-start;
+      gap: 0;
+      padding: 0.5rem 0;
+      transform: translateY(-8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 200ms ease, opacity 200ms ease;
     }
 
-    .main-nav.open { transform: translateX(0); }
+    .main-nav.open {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
 
     .nav-link {
-      font-size: 1rem;
-      letter-spacing: 0.15em;
+      width: 100%;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      padding: 0.9rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-link:last-of-type {
+      border-bottom: none;
+    }
+
+    .nav-link::after {
+      display: none;
+    }
+
+    .nav-link-bold {
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
     }
   }
 </style>
@@ -202,6 +250,9 @@ const currentPath = Astro.url.pathname;
   const header = document.getElementById('site-header')!;
   const toggle = document.getElementById('menu-toggle')!;
   const nav = document.getElementById('main-nav')!;
+
+  // Move nav to body level so it's outside the header's stacking context
+  document.body.appendChild(nav);
 
   window.addEventListener('scroll', () => {
     header.classList.toggle('scrolled', window.scrollY > 20);
