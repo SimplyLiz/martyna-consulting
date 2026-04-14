@@ -1,5 +1,12 @@
 import type { APIRoute } from 'astro';
 import { readData, writeData } from '../../../lib/storage';
+import { sendConfirmationEmail, sendRejectionEmail, sendRescheduleEmail, sendMessageEmail } from '../../../lib/email';
+
+interface PageView {
+  path: string;
+  timestamp: string;
+  referrer?: string;
+}
 
 function checkAuth(request: Request): boolean {
   const authHeader = request.headers.get('x-admin-password');
@@ -26,7 +33,12 @@ export const GET: APIRoute = async ({ request }) => {
   try {
     const config = await loadConfig();
     const appointments = await loadAppointments();
-    return json({ config, appointments });
+    let pageviews: PageView[] = [];
+    try {
+      const raw = await readData('pageviews.json');
+      pageviews = JSON.parse(raw);
+    } catch {}
+    return json({ config, appointments, pageviews });
   } catch {
     return json({ error: 'Fehler beim Laden.' }, 500);
   }
@@ -61,6 +73,48 @@ export const POST: APIRoute = async ({ request }) => {
 
     } else if (action === 'setDuration') {
       config.slotDurationMinutes = parseInt(payload.minutes);
+
+    } else if (action === 'confirmAppointment') {
+      const appointments = await loadAppointments();
+      const idx = appointments.findIndex((a: { id: string }) => a.id === payload.id);
+      if (idx === -1) return json({ error: 'Termin nicht gefunden.' }, 404);
+      appointments[idx].status = 'confirmed';
+      await writeData('appointments.json', JSON.stringify(appointments, null, 2));
+      await sendConfirmationEmail(appointments[idx]);
+      return json({ ok: true, appointment: appointments[idx] });
+
+    } else if (action === 'rejectAppointment') {
+      const appointments = await loadAppointments();
+      const idx = appointments.findIndex((a: { id: string }) => a.id === payload.id);
+      if (idx === -1) return json({ error: 'Termin nicht gefunden.' }, 404);
+      appointments[idx].status = 'rejected';
+      await writeData('appointments.json', JSON.stringify(appointments, null, 2));
+      await sendRejectionEmail(appointments[idx]);
+      return json({ ok: true, appointment: appointments[idx] });
+
+    } else if (action === 'rescheduleAppointment') {
+      const appointments = await loadAppointments();
+      const idx = appointments.findIndex((a: { id: string }) => a.id === payload.id);
+      if (idx === -1) return json({ error: 'Termin nicht gefunden.' }, 404);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.date)) return json({ error: 'Ungültiges Datum.' }, 400);
+      if (!/^\d{2}:\d{2}$/.test(payload.time)) return json({ error: 'Ungültige Uhrzeit.' }, 400);
+      const oldDate = appointments[idx].date;
+      const oldTime = appointments[idx].time;
+      appointments[idx].date = payload.date;
+      appointments[idx].time = payload.time;
+      appointments[idx].status = 'confirmed';
+      await writeData('appointments.json', JSON.stringify(appointments, null, 2));
+      await sendRescheduleEmail(appointments[idx], oldDate, oldTime);
+      return json({ ok: true, appointment: appointments[idx] });
+
+    } else if (action === 'sendMessageToCustomer') {
+      const appointments = await loadAppointments();
+      const idx = appointments.findIndex((a: { id: string }) => a.id === payload.id);
+      if (idx === -1) return json({ error: 'Termin nicht gefunden.' }, 404);
+      appointments[idx].adminMessage = String(payload.message).slice(0, 2000);
+      await writeData('appointments.json', JSON.stringify(appointments, null, 2));
+      await sendMessageEmail(appointments[idx]);
+      return json({ ok: true, appointment: appointments[idx] });
 
     } else if (action === 'cancelAppointment') {
       const appointments = await loadAppointments();
