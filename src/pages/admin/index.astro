@@ -1,0 +1,692 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Admin — Terminverwaltung">
+
+  <section class="admin-section">
+    <div class="container">
+
+      <!-- Login overlay -->
+      <div id="login-overlay" class="login-overlay">
+        <div class="login-box">
+          <div class="login-logo">
+            <span class="logo-mark">C</span>
+            <span>Admin</span>
+          </div>
+          <h2>Anmeldung</h2>
+          <div class="form-group">
+            <label for="admin-pw">Passwort</label>
+            <input type="password" id="admin-pw" placeholder="Passwort eingeben" />
+          </div>
+          <div id="login-error" class="msg-error" style="display:none;margin-top:0.75rem;"></div>
+          <button id="login-btn" class="btn btn-primary" style="margin-top:1rem;width:100%;justify-content:center;">
+            Anmelden
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin UI -->
+      <div id="admin-ui" style="display:none;">
+        <div class="admin-header">
+          <h1>Terminverwaltung</h1>
+          <div class="admin-header-actions">
+            <span id="admin-status" class="admin-status"></span>
+            <button id="logout-btn" class="btn btn-outline" style="padding:0.5rem 1rem;font-size:0.75rem;">
+              Abmelden
+            </button>
+          </div>
+        </div>
+
+        <div class="admin-grid">
+
+          <!-- Weekly Schedule -->
+          <div class="admin-card">
+            <h3>Wochenplan</h3>
+            <p class="card-desc">Standard-Verfügbarkeit pro Wochentag</p>
+            <div id="weekly-schedule" class="weekly-schedule">
+              Wird geladen...
+            </div>
+          </div>
+
+          <!-- Date Overrides / Block -->
+          <div class="admin-card">
+            <h3>Tages-Ausnahmen</h3>
+            <p class="card-desc">Einzelne Tage sperren oder mit eigenen Zeiten versehen</p>
+
+            <div class="override-form">
+              <div class="form-group">
+                <label for="override-date">Datum</label>
+                <input type="date" id="override-date" />
+              </div>
+              <div class="form-group">
+                <label for="override-type">Aktion</label>
+                <select id="override-type">
+                  <option value="block">Tag sperren</option>
+                  <option value="unblock">Sperre aufheben</option>
+                  <option value="custom">Eigene Zeiten setzen</option>
+                </select>
+              </div>
+              <div id="custom-slots-input" style="display:none;">
+                <div class="form-group">
+                  <label>Zeitraum 1</label>
+                  <div class="time-range">
+                    <input type="time" id="ov-start1" value="08:00" />
+                    <span>bis</span>
+                    <input type="time" id="ov-end1" value="12:00" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Zeitraum 2 (optional)</label>
+                  <div class="time-range">
+                    <input type="time" id="ov-start2" value="14:00" />
+                    <span>bis</span>
+                    <input type="time" id="ov-end2" value="16:00" />
+                  </div>
+                </div>
+              </div>
+              <button id="apply-override" class="btn btn-primary" style="margin-top:0.5rem;">
+                Anwenden
+              </button>
+            </div>
+
+            <div id="overrides-list" class="overrides-list" style="margin-top:1.5rem;"></div>
+          </div>
+
+          <!-- Slot Duration -->
+          <div class="admin-card">
+            <h3>Terminlänge</h3>
+            <p class="card-desc">Dauer pro Gesprächstermin in Minuten</p>
+            <div class="duration-select">
+              <select id="duration-select">
+                <option value="30">30 Minuten</option>
+                <option value="45">45 Minuten</option>
+                <option value="60" selected>60 Minuten</option>
+                <option value="90">90 Minuten</option>
+              </select>
+              <button id="save-duration" class="btn btn-outline">Speichern</button>
+            </div>
+          </div>
+
+          <!-- Upcoming Appointments -->
+          <div class="admin-card appointments-card">
+            <h3>Bevorstehende Termine</h3>
+            <p class="card-desc">Alle bestätigten Buchungen</p>
+            <div id="appointments-list" class="appointments-list">
+              Wird geladen...
+            </div>
+          </div>
+
+        </div>
+
+        <div id="admin-feedback" style="margin-top:1rem;"></div>
+      </div>
+
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .admin-section {
+    padding-top: 5rem;
+    min-height: 100vh;
+  }
+
+  /* Login */
+  .login-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+  }
+
+  .login-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 3rem;
+    border-radius: 2px;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .login-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .login-logo .logo-mark {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--gold);
+    border-radius: 2px;
+  }
+
+  .login-box h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Admin UI */
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 0 1.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+
+  .admin-header h1 { font-size: 2rem; }
+
+  .admin-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .admin-status {
+    font-size: 0.75rem;
+    color: var(--text-subtle);
+  }
+
+  .admin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .admin-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    border-radius: 2px;
+  }
+
+  .admin-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .card-desc {
+    font-size: 0.8rem;
+    color: var(--text-subtle);
+    margin-bottom: 1.5rem;
+  }
+
+  .appointments-card {
+    grid-column: 1 / -1;
+  }
+
+  /* Weekly schedule */
+  .weekly-schedule {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .day-row {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .day-row:last-child { border-bottom: none; }
+
+  .day-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .day-times {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .day-toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .day-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .toggle-slider::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 2px;
+    left: 2px;
+    background: var(--text-subtle);
+    border-radius: 50%;
+    transition: all var(--transition);
+  }
+
+  input:checked + .toggle-slider {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+  }
+
+  input:checked + .toggle-slider::after {
+    transform: translateX(18px);
+    background: var(--gold);
+  }
+
+  /* Override form */
+  .override-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .time-range {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .time-range span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .time-range input {
+    flex: 1;
+  }
+
+  /* Overrides list */
+  .overrides-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .override-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.75rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 0.8rem;
+  }
+
+  .override-item .override-date { color: var(--text); font-weight: 500; }
+  .override-item .override-type { color: var(--text-muted); }
+
+  .remove-override {
+    background: none;
+    border: none;
+    color: var(--text-subtle);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    transition: color var(--transition);
+  }
+  .remove-override:hover { color: #eb5757; }
+
+  /* Duration */
+  .duration-select {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  /* Appointments */
+  .appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .appointment-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+
+  .appointment-row:first-child { border-top: 1px solid var(--border); }
+
+  .appt-datetime {
+    color: var(--gold);
+    font-weight: 500;
+    font-size: 0.8rem;
+  }
+
+  .appt-name { color: var(--text); }
+
+  .appt-email { color: var(--text-muted); }
+
+  .appt-status {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .status-confirmed {
+    background: #0f2018;
+    border: 1px solid #2a5a3a;
+    color: #6fcf97;
+  }
+
+  .status-cancelled {
+    background: #200f0f;
+    border: 1px solid #5a2a2a;
+    color: #eb5757;
+  }
+
+  .cancel-appt {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: var(--font-body);
+    transition: all var(--transition);
+  }
+
+  .cancel-appt:hover { border-color: #eb5757; color: #eb5757; }
+
+  .no-appts {
+    font-size: 0.85rem;
+    color: var(--text-subtle);
+    padding: 1.5rem 0;
+    text-align: center;
+    border: 1px dashed var(--border);
+    border-radius: 2px;
+  }
+
+  @media (max-width: 900px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .appointments-card { grid-column: 1; }
+    .appointment-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<script>
+  const DAY_NAMES: Record<string, string> = {
+    '1': 'Montag', '2': 'Dienstag', '3': 'Mittwoch',
+    '4': 'Donnerstag', '5': 'Freitag', '6': 'Samstag', '0': 'Sonntag'
+  };
+
+  let adminPassword = '';
+  let configData: any = null;
+  let appointmentsData: any[] = [];
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  document.getElementById('login-btn')!.addEventListener('click', tryLogin);
+  document.getElementById('admin-pw')!.addEventListener('keydown', (e: Event) => {
+    if ((e as KeyboardEvent).key === 'Enter') tryLogin();
+  });
+
+  async function tryLogin() {
+    const pw = (document.getElementById('admin-pw') as HTMLInputElement).value;
+    const errEl = document.getElementById('login-error')!;
+    errEl.style.display = 'none';
+
+    const res = await fetch('/api/admin/slots', {
+      headers: { 'x-admin-password': pw }
+    });
+
+    if (res.ok) {
+      adminPassword = pw;
+      const data = await res.json();
+      configData = data.config;
+      appointmentsData = data.appointments;
+      document.getElementById('login-overlay')!.style.display = 'none';
+      document.getElementById('admin-ui')!.style.display = 'block';
+      renderAll();
+    } else {
+      errEl.textContent = 'Falsches Passwort.';
+      errEl.style.display = 'block';
+    }
+  }
+
+  document.getElementById('logout-btn')!.addEventListener('click', () => {
+    adminPassword = '';
+    document.getElementById('admin-ui')!.style.display = 'none';
+    document.getElementById('login-overlay')!.style.display = 'flex';
+    (document.getElementById('admin-pw') as HTMLInputElement).value = '';
+  });
+
+  // ── API Helper ───────────────────────────────────────────────────────────
+  async function apiPost(action: string, payload: object) {
+    const res = await fetch('/api/admin/slots', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-password': adminPassword,
+      },
+      body: JSON.stringify({ action, payload }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      if (data.config) configData = data.config;
+      showFeedback('Gespeichert ✓', 'success');
+    } else {
+      showFeedback(data.error || 'Fehler', 'error');
+    }
+    return data;
+  }
+
+  function showFeedback(msg: string, type: 'success' | 'error') {
+    const el = document.getElementById('admin-feedback')!;
+    el.innerHTML = `<div class="msg-${type}">${msg}</div>`;
+    setTimeout(() => { el.innerHTML = ''; }, 3000);
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────────
+  function renderAll() {
+    renderWeeklySchedule();
+    renderOverridesList();
+    renderAppointments();
+    (document.getElementById('duration-select') as HTMLSelectElement).value =
+      String(configData.slotDurationMinutes || 60);
+  }
+
+  function renderWeeklySchedule() {
+    const el = document.getElementById('weekly-schedule')!;
+    const days = ['1','2','3','4','5','6','0'];
+
+    el.innerHTML = days.map(day => {
+      const sch = configData.weeklySchedule[day] || { enabled: false, slots: [] };
+      const times = sch.slots.map((s: any) => `${s.start}–${s.end}`).join(', ') || '—';
+      return `
+        <div class="day-row" data-day="${day}">
+          <span class="day-name">${DAY_NAMES[day]}</span>
+          <span class="day-times">${times}</span>
+          <label class="day-toggle">
+            <input type="checkbox" ${sch.enabled ? 'checked' : ''} data-day="${day}" class="day-toggle-input" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      `;
+    }).join('');
+
+    el.querySelectorAll('.day-toggle-input').forEach(inp => {
+      inp.addEventListener('change', async (e) => {
+        const target = e.target as HTMLInputElement;
+        const day = target.dataset.day!;
+        const enabled = target.checked;
+        const currentSlots = configData.weeklySchedule[day]?.slots || [
+          { start: '08:00', end: '12:00' },
+          { start: '14:00', end: '16:00' }
+        ];
+        await apiPost('updateWeekly', { day, enabled, slots: currentSlots });
+        renderWeeklySchedule();
+      });
+    });
+  }
+
+  function renderOverridesList() {
+    const el = document.getElementById('overrides-list')!;
+    const overrides = configData.overrides || {};
+    const blocked = configData.blockedDates || [];
+
+    const allItems: { date: string; type: string }[] = [];
+
+    blocked.forEach((d: string) => allItems.push({ date: d, type: 'Gesperrt' }));
+    Object.entries(overrides).forEach(([date, val]) => {
+      if (val === false) {
+        if (!allItems.find(i => i.date === date)) allItems.push({ date, type: 'Gesperrt (Override)' });
+      } else {
+        allItems.push({ date, type: 'Eigene Zeiten' });
+      }
+    });
+
+    allItems.sort((a, b) => a.date.localeCompare(b.date));
+
+    if (allItems.length === 0) {
+      el.innerHTML = '<p style="font-size:0.8rem;color:var(--text-subtle);">Keine Ausnahmen vorhanden.</p>';
+      return;
+    }
+
+    el.innerHTML = allItems.map(item => `
+      <div class="override-item">
+        <span class="override-date">${item.date}</span>
+        <span class="override-type">${item.type}</span>
+        <button class="remove-override" data-date="${item.date}" data-type="${item.type}" title="Entfernen">×</button>
+      </div>
+    `).join('');
+
+    el.querySelectorAll('.remove-override').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const date = (btn as HTMLElement).dataset.date!;
+        const type = (btn as HTMLElement).dataset.type!;
+        if (type === 'Gesperrt') {
+          await apiPost('unblockDate', { date });
+        } else {
+          await apiPost('removeOverride', { date });
+        }
+        renderOverridesList();
+      });
+    });
+  }
+
+  function renderAppointments() {
+    const el = document.getElementById('appointments-list')!;
+    const upcoming = appointmentsData
+      .filter(a => a.date >= new Date().toISOString().slice(0, 10))
+      .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`));
+
+    if (upcoming.length === 0) {
+      el.innerHTML = '<div class="no-appts">Keine bevorstehenden Termine.</div>';
+      return;
+    }
+
+    el.innerHTML = upcoming.map(a => `
+      <div class="appointment-row" data-id="${a.id}">
+        <span class="appt-datetime">${a.date} · ${a.time} Uhr</span>
+        <span class="appt-name">${escHtml(a.name)}</span>
+        <span class="appt-email">${escHtml(a.email)}</span>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <span class="appt-status status-${a.status}">${a.status === 'confirmed' ? 'Bestätigt' : 'Abgesagt'}</span>
+          ${a.status === 'confirmed' ? `<button class="cancel-appt" data-id="${a.id}">Absagen</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    el.querySelectorAll('.cancel-appt').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = (btn as HTMLElement).dataset.id!;
+        if (!confirm('Termin wirklich absagen?')) return;
+        const res = await fetch('/api/admin/slots', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+          body: JSON.stringify({ action: 'cancelAppointment', payload: { id } }),
+        });
+        if (res.ok) {
+          const appt = appointmentsData.find(a => a.id === id);
+          if (appt) appt.status = 'cancelled';
+          renderAppointments();
+          showFeedback('Termin abgesagt.', 'success');
+        }
+      });
+    });
+  }
+
+  function escHtml(str: string): string {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Override form ────────────────────────────────────────────────────────
+  document.getElementById('override-type')!.addEventListener('change', (e) => {
+    const val = (e.target as HTMLSelectElement).value;
+    document.getElementById('custom-slots-input')!.style.display = val === 'custom' ? 'block' : 'none';
+  });
+
+  document.getElementById('apply-override')!.addEventListener('click', async () => {
+    const date = (document.getElementById('override-date') as HTMLInputElement).value;
+    const type = (document.getElementById('override-type') as HTMLSelectElement).value;
+
+    if (!date) { showFeedback('Bitte Datum wählen.', 'error'); return; }
+
+    if (type === 'block') {
+      await apiPost('blockDate', { date });
+    } else if (type === 'unblock') {
+      await apiPost('unblockDate', { date });
+      await apiPost('removeOverride', { date });
+    } else if (type === 'custom') {
+      const s1 = (document.getElementById('ov-start1') as HTMLInputElement).value;
+      const e1 = (document.getElementById('ov-end1') as HTMLInputElement).value;
+      const s2 = (document.getElementById('ov-start2') as HTMLInputElement).value;
+      const e2 = (document.getElementById('ov-end2') as HTMLInputElement).value;
+      const slots = [{ start: s1, end: e1 }];
+      if (s2 && e2) slots.push({ start: s2, end: e2 });
+      await apiPost('setOverride', { date, enabled: true, slots });
+    }
+
+    renderOverridesList();
+  });
+
+  // ── Duration ─────────────────────────────────────────────────────────────
+  document.getElementById('save-duration')!.addEventListener('click', async () => {
+    const val = (document.getElementById('duration-select') as HTMLSelectElement).value;
+    await apiPost('setDuration', { minutes: parseInt(val) });
+  });
+</script>

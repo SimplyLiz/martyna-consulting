@@ -1,0 +1,93 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Impressum">
+  <section class="legal-page">
+    <div class="container legal-inner">
+      <span class="section-label">Rechtliches</span>
+      <span class="gold-rule"></span>
+      <h1>Impressum</h1>
+
+      <div class="legal-content">
+        <div class="legal-block">
+          <h3>Angaben gemäß § 5 TMG</h3>
+          <p>
+            Martyna Kwiecien<br />
+            Claritas AI Consulting<br />
+            [Straße und Hausnummer]<br />
+            [PLZ] [Stadt]<br />
+            Deutschland / Österreich
+          </p>
+        </div>
+
+        <div class="legal-block">
+          <h3>Kontakt</h3>
+          <p>
+            E-Mail: <a href="mailto:hallo@claritas-ai.consulting">hallo@claritas-ai.consulting</a>
+          </p>
+        </div>
+
+        <div class="legal-block">
+          <h3>Berufsrechtliche Angaben</h3>
+          <p>
+            Martyna Kwiecien ist Juristin (Konzipientur) und keine eingetragene
+            Rechtsanwältin. Die auf dieser Website angebotenen Leistungen stellen
+            kein Rechtsdienstleistungsangebot im Sinne des Rechtsdienstleistungsgesetzes
+            (RDG) dar.
+          </p>
+        </div>
+
+        <div class="legal-block">
+          <h3>Streitschlichtung</h3>
+          <p>
+            Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung
+            (OS) bereit: <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">
+            https://ec.europa.eu/consumers/odr/</a>.<br />
+            Unsere E-Mail-Adresse finden Sie oben im Impressum.
+          </p>
+          <p style="margin-top:1rem;">
+            Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren
+            vor einer Verbraucherschlichtungsstelle teilzunehmen.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .legal-page { padding: 10rem 0 6rem; }
+  .legal-inner { max-width: 720px; }
+
+  h1 {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 300;
+    margin-bottom: 3rem;
+  }
+
+  .legal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .legal-block {
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .legal-block:first-child { border-top: 1px solid var(--border); }
+
+  .legal-block h3 {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .legal-block p { font-size: 0.9rem; line-height: 1.8; }
+</style>
