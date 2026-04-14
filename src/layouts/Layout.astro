@@ -9,6 +9,9 @@ interface Props {
 }
 
 const { title, description = 'Claritas AI Consulting – Regulatorisches Consulting zu EU AI Act, DSGVO und KI-Governance für Unternehmen.' } = Astro.props;
+
+const siteUrl = 'https://claritas-ai-consulting.vercel.app';
+const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`;
 ---
 <!doctype html>
 <html lang="de">
@@ -22,8 +25,32 @@ const { title, description = 'Claritas AI Consulting – Regulatorisches Consult
     <meta property="og:title" content={`${title} | Claritas AI Consulting`} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage} />
   </head>
   <body>
+    <script>
+      (function() {
+        var path = window.location.pathname;
+        if (path === '/admin' || path.startsWith('/admin/') || path === '/api') return;
+        
+        // Get or create visitor session ID
+        var sid = sessionStorage.getItem('claritas_sid');
+        if (!sid) {
+          sid = 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+          sessionStorage.setItem('claritas_sid', sid);
+        }
+        
+        fetch('/api/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: path, referrer: document.referrer, sid: sid }),
+        }).catch(function() {});
+      })();
+    </script>
     <Header />
     <main>
       <slot />

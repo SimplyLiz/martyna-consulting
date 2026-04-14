@@ -14,6 +14,11 @@
   "dependencies": {
     "@astrojs/node": "^10.0.4",
     "@astrojs/vercel": "^10.0.4",
-    "astro": "^6.1.6"
+    "@vercel/og": "^0.11.1",
+    "astro": "^6.1.6",
+    "resend": "^6.11.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   }
 }
