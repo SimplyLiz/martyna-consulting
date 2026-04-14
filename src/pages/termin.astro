@@ -23,21 +23,28 @@ import Layout from '../layouts/Layout.astro';
 
       <div class="booking-info">
         <div class="booking-detail">
-          <span class="detail-icon">⏱</span>
+          <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
           <div>
             <span class="detail-label">Dauer</span>
             <span class="detail-value">30 Minuten</span>
           </div>
         </div>
         <div class="booking-detail">
-          <span class="detail-icon">💬</span>
+          <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
           <div>
             <span class="detail-label">Format</span>
             <span class="detail-value">Videocall (Link nach Buchung)</span>
           </div>
         </div>
         <div class="booking-detail">
-          <span class="detail-icon">€</span>
+          <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
           <div>
             <span class="detail-label">Kosten</span>
             <span class="detail-value">Kostenlos</span>
@@ -181,10 +188,11 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .detail-icon {
-    font-size: 1.2rem;
-    width: 2rem;
-    text-align: center;
+    width: 28px;
+    height: 28px;
     flex-shrink: 0;
+    color: var(--gold);
+    opacity: 0.8;
   }
 
   .detail-label {
@@ -192,7 +200,7 @@ import Layout from '../layouts/Layout.astro';
     font-size: 0.62rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--text-subtle);
+    color: var(--gold);
     margin-bottom: 0.2rem;
   }
 

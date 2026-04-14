@@ -250,9 +250,20 @@ const currentPath = Astro.url.pathname;
   const header = document.getElementById('site-header')!;
   const toggle = document.getElementById('menu-toggle')!;
   const nav = document.getElementById('main-nav')!;
+  const headerInner = document.querySelector('.header-inner')!;
 
-  // Move nav to body level so it's outside the header's stacking context
-  document.body.appendChild(nav);
+  // On mobile, move nav to body to escape the header's stacking context.
+  // On desktop, keep it inside header-inner so the flex layout works.
+  function ensureNavPlacement() {
+    if (window.innerWidth <= 900) {
+      if (nav.parentElement !== document.body) document.body.appendChild(nav);
+    } else {
+      if (nav.parentElement !== headerInner) headerInner.appendChild(nav);
+    }
+  }
+
+  ensureNavPlacement();
+  window.addEventListener('resize', ensureNavPlacement);
 
   window.addEventListener('scroll', () => {
     header.classList.toggle('scrolled', window.scrollY > 20);
