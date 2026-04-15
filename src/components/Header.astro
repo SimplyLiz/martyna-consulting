@@ -1,8 +1,8 @@
 ---
 const navLinks = [
-  { href: '/leistungen', label: 'Leistungen' },
+  { href: '/preise', label: 'Preise' },
   { href: '/ueber-martyna', label: 'Über mich' },
-  { href: '/termin', label: 'Termin buchen', bold: true },
+  { href: '/leistungen', label: 'Leistungen', bold: true },
   { href: '/kontakt', label: 'Kontakt' },
 ];
 
@@ -28,7 +28,7 @@ const currentPath = Astro.url.pathname;
           {link.label}
         </a>
       ))}
-      <a href="/termin" class="btn btn-primary nav-cta">Erstgespräch</a>
+      <a href="/termin" class="btn btn-primary nav-cta">Termin vereinbaren</a>
     </nav>
 
     <button class="menu-toggle" id="menu-toggle" aria-label="Menü öffnen">
