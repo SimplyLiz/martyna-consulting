@@ -4,3 +4,4 @@ dist/
 .env
 *.ndjson
 .vercel
+data/pageviews.json
