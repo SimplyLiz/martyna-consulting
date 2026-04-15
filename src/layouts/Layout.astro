@@ -6,12 +6,18 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  ogTitle?: string;
 }
 
-const { title, description = 'Claritas AI Consulting – Regulatorisches Consulting zu EU AI Act, DSGVO und KI-Governance für Unternehmen.' } = Astro.props;
+const {
+  title,
+  description = 'Claritas AI Consulting – Regulatorisches Consulting zu EU AI Act, DSGVO und KI-Governance für Unternehmen.',
+  ogTitle,
+} = Astro.props;
 
 const siteUrl = 'https://claritas-ai-consulting.vercel.app';
-const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`;
+const resolvedOgTitle = ogTitle ?? 'Claritas AI Consulting';
+const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(resolvedOgTitle)}&description=${encodeURIComponent(description)}`;
 ---
 <!doctype html>
 <html lang="de">
@@ -28,8 +34,10 @@ const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(title)}&descriptio
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={resolvedOgTitle} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={resolvedOgTitle} />
   </head>
   <body>
     <script>

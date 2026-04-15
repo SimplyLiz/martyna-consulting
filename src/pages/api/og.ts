@@ -2,10 +2,41 @@ import { ImageResponse } from '@vercel/og';
 
 export const prerender = false;
 
+const GOLD = '#d4a84b';
+const GOLD_DIM = '#c0983e';
+const BG = '#09090f';
+const TEXT = '#ffffff';
+
+async function loadCormorant(): Promise<ArrayBuffer | null> {
+  try {
+    const cssRes = await fetch(
+      'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;600&display=swap',
+      { headers: { 'User-Agent': 'Mozilla/5.0' } }
+    );
+    const css = await cssRes.text();
+    const match = css.match(/src: url\(([^)]+\.ttf)\)/);
+    if (!match) return null;
+    const fontRes = await fetch(match[1]);
+    if (!fontRes.ok) return null;
+    return await fontRes.arrayBuffer();
+  } catch {
+    return null;
+  }
+}
+
 export async function GET({ request }: { request: Request }) {
   const url = new URL(request.url);
   const title = url.searchParams.get('title') || 'Claritas AI Consulting';
-  const description = url.searchParams.get('description') || 'EU AI Act · DSGVO · KI-Governance';
+
+  const fontData = await loadCormorant();
+  const fonts = fontData
+    ? [
+        { name: 'Cormorant', data: fontData, weight: 300 as const, style: 'normal' as const },
+        { name: 'Cormorant', data: fontData, weight: 600 as const, style: 'normal' as const },
+      ]
+    : [];
+  const serif = fontData ? "'Cormorant', Georgia, serif" : 'Georgia, serif';
+  const titleSize = title.length > 35 ? '54px' : '66px';
 
   return new ImageResponse(
     {
@@ -14,55 +45,81 @@ export async function GET({ request }: { request: Request }) {
         style: {
           width: '1200px',
           height: '630px',
-          background: '#09090f',
+          background: BG,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: '72px 80px',
+          justifyContent: 'center',
+          padding: '80px',
           fontFamily: 'Georgia, serif',
-          position: 'relative',
         },
         children: [
-          // Top: logo
+
+          // Logo row
           {
             type: 'div',
             props: {
-              style: { display: 'flex', alignItems: 'center', gap: '16px' },
+              style: { display: 'flex', alignItems: 'center', marginBottom: '60px' },
               children: [
+                // C mark
                 {
                   type: 'div',
                   props: {
                     style: {
-                      width: '48px',
-                      height: '48px',
-                      border: '1.5px solid #b8973e',
+                      width: '150px',
+                      height: '150px',
+                      border: `1.5px solid ${GOLD}`,
+                      borderRadius: '6px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      borderRadius: '3px',
-                      color: '#b8973e',
-                      fontSize: '26px',
-                      fontWeight: '600',
+                      marginRight: '48px',
+                      flexShrink: 0,
                     },
-                    children: 'C',
+                    children: {
+                      type: 'span',
+                      props: {
+                        style: {
+                          fontFamily: serif,
+                          fontSize: '93px',
+                          fontWeight: 600,
+                          color: GOLD,
+                          lineHeight: '1',
+                        },
+                        children: 'C',
+                      },
+                    },
                   },
                 },
+                // Wordmark
                 {
                   type: 'div',
                   props: {
-                    style: { display: 'flex', flexDirection: 'column', gap: '2px' },
+                    style: { display: 'flex', flexDirection: 'column' },
                     children: [
                       {
                         type: 'span',
                         props: {
-                          style: { color: '#f0ece4', fontSize: '20px', fontWeight: '600', letterSpacing: '0.02em' },
+                          style: {
+                            fontFamily: serif,
+                            fontSize: '132px',
+                            fontWeight: 300,
+                            color: TEXT,
+                            letterSpacing: '0.02em',
+                            lineHeight: '1',
+                          },
                           children: 'Claritas',
                         },
                       },
                       {
                         type: 'span',
                         props: {
-                          style: { color: '#b8973e', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase' },
+                          style: {
+                            fontSize: '24px',
+                            color: GOLD_DIM,
+                            letterSpacing: '0.28em',
+                            textTransform: 'uppercase',
+                            marginTop: '18px',
+                          },
                           children: 'AI Consulting',
                         },
                       },
@@ -73,61 +130,53 @@ export async function GET({ request }: { request: Request }) {
             },
           },
 
-          // Middle: title
+          // Gold rule
           {
             type: 'div',
             props: {
-              style: { display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '900px' },
-              children: [
-                {
-                  type: 'div',
-                  props: {
-                    style: {
-                      color: '#f0ece4',
-                      fontSize: title.length > 30 ? '52px' : '64px',
-                      fontWeight: '300',
-                      lineHeight: '1.1',
-                      letterSpacing: '-0.01em',
-                    },
-                    children: title,
-                  },
-                },
-                {
-                  type: 'div',
-                  props: {
-                    style: { color: '#8a8070', fontSize: '22px', fontWeight: '300', lineHeight: '1.5', maxWidth: '700px' },
-                    children: description,
-                  },
-                },
-              ],
+              style: {
+                width: '48px',
+                height: '1px',
+                background: GOLD,
+                marginBottom: '36px',
+              },
             },
           },
 
-          // Bottom: decorative tag line
+          // Page title
           {
             type: 'div',
             props: {
-              style: { display: 'flex', alignItems: 'center', gap: '12px' },
-              children: [
-                {
-                  type: 'div',
-                  props: {
-                    style: { width: '32px', height: '1px', background: '#b8973e' },
-                  },
-                },
-                {
-                  type: 'span',
-                  props: {
-                    style: { color: '#b8973e', fontSize: '12px', letterSpacing: '0.18em', textTransform: 'uppercase' },
-                    children: 'claritas-ai-consulting.vercel.app',
-                  },
-                },
-              ],
+              style: {
+                fontFamily: serif,
+                fontSize: titleSize,
+                fontWeight: 300,
+                color: TEXT,
+                lineHeight: '1.2',
+                letterSpacing: '-0.01em',
+                maxWidth: '980px',
+                marginBottom: '24px',
+              },
+              children: title,
             },
           },
+
+          // Services
+          {
+            type: 'div',
+            props: {
+              style: {
+                fontSize: '24px',
+                color: GOLD,
+                letterSpacing: '0.06em',
+              },
+              children: 'EU AI Act · DSGVO · KI-Governance',
+            },
+          },
+
         ],
       },
     },
-    { width: 1200, height: 630 }
+    { width: 1200, height: 630, fonts }
   );
 }
