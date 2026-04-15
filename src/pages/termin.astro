@@ -1,16 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import BookingWidget from '../components/BookingWidget.astro';
-
-const agenda = [
-  'Fortschritte und offene Punkte',
-  'Überprüfung umgesetzter Maßnahmen',
-  'Neue Anforderungen und Prioritäten',
-  'Nächste Schritte festlegen',
-];
 ---
 
-<Layout title="Termin buchen" ogTitle="Termin buchen" description="Buchen Sie einen Termin mit Martyna Kwiecien von Claritas AI Consulting.">
+<Layout title="Termin buchen" ogTitle="Termin buchen" description="Buchen Sie ein kostenloses Erstgespräch oder einen Folgetermin mit Martyna Kwiecien von Claritas AI Consulting.">
 
   <section class="page-hero">
     <div class="container">
@@ -18,8 +10,7 @@ const agenda = [
       <span class="gold-rule"></span>
       <h1>Termin<br /><em>buchen</em></h1>
       <p class="hero-sub">
-        Wählen Sie einen passenden Termin. Bitte schildern Sie kurz,
-        welche Themen wir besprechen sollen.
+        Wählen Sie die Art des Gesprächs und buchen Sie direkt einen Termin.
       </p>
     </div>
   </section>
@@ -28,39 +19,723 @@ const agenda = [
 
   <section class="section">
     <div class="container">
-      <BookingWidget
-        type="folgetermin"
-        agenda={agenda}
-        showDetails={false}
-      />
+
+      <!-- Type selector -->
+      <div class="type-selector">
+        <button class="type-card" data-type="erstgespraech">
+          <span class="type-badge">Kostenlos</span>
+          <div class="type-card-inner">
+            <h3>Erstgespräch</h3>
+            <p class="type-meta">30 Minuten · Videocall · Kostenlos</p>
+            <p class="type-desc">Für neue Kunden. Wir besprechen Ihre Situation und ich gebe eine erste Einschätzung zu Risikoklasse und Handlungsbedarf.</p>
+          </div>
+          <span class="type-arrow">→</span>
+        </button>
+        <button class="type-card" data-type="folgetermin">
+          <div class="type-card-inner">
+            <h3>Folgetermin</h3>
+            <p class="type-meta">60 Minuten · Videocall · Nach Vereinbarung</p>
+            <p class="type-desc">Für bestehende Kunden. Wir besprechen Fortschritte, offene Punkte und die nächsten Schritte.</p>
+          </div>
+          <span class="type-arrow">→</span>
+        </button>
+      </div>
+
+      <!-- Booking section (revealed after selection) -->
+      <div id="booking-section" class="booking-section" style="display:none;">
+        <div class="booking-layout">
+
+          <!-- Info sidebar (swapped by JS) -->
+          <div class="booking-info" id="booking-info">
+            <!-- populated by JS -->
+          </div>
+
+          <!-- Calendar widget -->
+          <div class="booking-widget">
+            <div id="step-1" class="booking-step">
+              <h3>1. Datum wählen</h3>
+              <div id="calendar" class="calendar-wrap"></div>
+            </div>
+
+            <div id="step-2" class="booking-step" style="display:none;">
+              <h3>2. Uhrzeit wählen</h3>
+              <div class="step-back">
+                <button class="back-btn" id="back-to-date">← Datum ändern</button>
+                <span id="selected-date-display" class="selected-date"></span>
+              </div>
+              <div id="slots-grid" class="slots-grid"></div>
+            </div>
+
+            <div id="step-3" class="booking-step" style="display:none;">
+              <h3>3. Ihre Daten</h3>
+              <div class="step-back">
+                <button class="back-btn" id="back-to-slots">← Uhrzeit ändern</button>
+                <span id="selected-slot-display" class="selected-date"></span>
+              </div>
+              <form id="booking-form" class="booking-form" novalidate>
+                <input type="hidden" id="booking-date" name="date" />
+                <input type="hidden" id="booking-time" name="time" />
+                <input type="hidden" id="booking-type" name="appointmentType" value="erstgespraech" />
+                <div class="form-group">
+                  <label for="b-name">Name *</label>
+                  <input type="text" id="b-name" name="name" placeholder="Vor- und Nachname" required />
+                </div>
+                <div class="form-group">
+                  <label for="b-email">E-Mail *</label>
+                  <input type="email" id="b-email" name="email" placeholder="ihre@email.de" required />
+                </div>
+                <div class="form-group">
+                  <label for="b-company">Unternehmen</label>
+                  <input type="text" id="b-company" name="company" placeholder="Optional" />
+                </div>
+                <div class="form-group">
+                  <label for="b-topic">Thema / Anliegen</label>
+                  <textarea id="b-topic" name="topic" placeholder="Kurze Beschreibung, damit ich mich vorbereiten kann..." style="min-height:90px;"></textarea>
+                </div>
+                <div class="form-group form-group--checkbox">
+                  <label class="checkbox-label">
+                    <input type="checkbox" name="privacy" required />
+                    <span>Ich stimme der <a href="/datenschutz" target="_blank">Datenschutzerklärung</a> zu. *</span>
+                  </label>
+                </div>
+                <div id="booking-feedback"></div>
+                <button type="submit" class="btn btn-primary">
+                  <span id="book-btn-text">Termin bestätigen</span>
+                  <span id="book-btn-loading" style="display:none;">Wird gebucht...</span>
+                </button>
+              </form>
+            </div>
+
+            <div id="step-4" class="booking-step" style="display:none;">
+              <div class="success-state">
+                <span class="success-icon">✓</span>
+                <h3>Termin bestätigt!</h3>
+                <p id="success-message">Wir freuen uns auf das Gespräch.</p>
+                <a href="/" class="btn btn-outline" style="margin-top:1.5rem;">Zur Startseite</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </section>
 
 </Layout>
 
 <style>
-  .page-hero {
-    padding: 10rem 0 5rem;
+  .page-hero { padding: 10rem 0 5rem; }
+  .page-hero h1 { font-size: clamp(3rem, 6vw, 4.5rem); font-weight: 300; margin-bottom: 1.5rem; }
+  .page-hero h1 em { font-style: italic; color: var(--gold); }
+  .hero-sub { max-width: 560px; font-size: 1.05rem; line-height: 1.8; }
+
+  /* Type selector */
+  .type-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 4rem;
   }
 
-  .page-hero h1 {
-    font-size: clamp(3rem, 6vw, 4.5rem);
+  .type-card {
+    background: var(--bg-card);
+    border: none;
+    padding: 2.5rem;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    transition: background var(--transition);
+    font-family: var(--font-body);
+  }
+
+  .type-card:hover { background: var(--bg-surface); }
+
+  .type-card.selected {
+    background: var(--bg-surface);
+    outline: 2px solid var(--gold);
+    outline-offset: -2px;
+  }
+
+  .type-card.selected .type-arrow { color: var(--gold); transform: rotate(90deg); }
+
+  .type-badge {
+    display: inline-block;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--gold);
+    padding: 0.25rem 0.65rem;
+    border-radius: 1px;
+    width: fit-content;
+  }
+
+  .type-card-inner h3 {
+    font-size: 1.4rem;
     font-weight: 300;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+  }
+
+  .type-meta {
+    font-size: 0.8rem;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.6rem;
+  }
+
+  .type-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  .type-arrow {
+    font-size: 1.2rem;
+    color: var(--text-subtle);
+    transition: all var(--transition);
+    margin-top: auto;
+  }
+
+  /* Booking section */
+  .booking-section {
+    animation: fadeIn 300ms ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .booking-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 5rem;
+    align-items: start;
+  }
+
+  .booking-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    position: sticky;
+    top: 100px;
+  }
+
+  .booking-widget {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 2.5rem;
+  }
+
+  .booking-step h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .step-back {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
     margin-bottom: 1.5rem;
   }
 
-  .page-hero h1 em {
-    font-style: italic;
-    color: var(--gold);
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: var(--font-body);
+    padding: 0;
+    transition: color var(--transition);
   }
 
-  .hero-sub {
-    max-width: 560px;
-    font-size: 1.05rem;
-    line-height: 1.8;
+  .back-btn:hover { color: var(--gold); }
+
+  .selected-date {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--gold);
+    letter-spacing: 0.05em;
   }
+
+  .booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-group--checkbox { flex-direction: row; align-items: flex-start; }
+
+  .checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: var(--gold);
+    cursor: pointer;
+  }
+
+  .success-state { text-align: center; padding: 3rem 1rem; }
+
+  .success-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 1px solid #2a5a3a;
+    color: #6fcf97;
+    font-size: 1.5rem;
+    margin: 0 auto 1.5rem;
+  }
+
+  .success-state h3 { margin-bottom: 0.75rem; }
+  .success-state p { font-size: 0.9rem; max-width: 380px; margin: 0 auto; }
 
   @media (max-width: 900px) {
     .page-hero { padding: 8rem 0 3rem; }
+    .type-selector { grid-template-columns: 1fr; }
+    .booking-layout { grid-template-columns: 1fr; gap: 2.5rem; }
+    .booking-info { position: static; }
   }
 </style>
+
+<style is:global>
+  /* Sidebar rows injected by JS */
+  .booking-detail {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .detail-icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    color: var(--gold);
+    opacity: 0.8;
+  }
+
+  .detail-label {
+    display: block;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.2rem;
+  }
+
+  .detail-value {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+
+  .booking-agenda {
+    padding: 1.5rem;
+    background: var(--bg-surface);
+  }
+
+  .agenda-label {
+    display: block;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+
+  .booking-agenda ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .booking-agenda li {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    padding-left: 1rem;
+    position: relative;
+  }
+
+  .booking-agenda li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--text-subtle);
+    font-size: 0.65rem;
+  }
+
+  /* Calendar */
+  .calendar-wrap { min-height: 300px; }
+
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+
+  .cal-nav {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    border-radius: 2px;
+    transition: all var(--transition);
+  }
+  .cal-nav:hover { border-color: var(--gold); color: var(--gold); }
+
+  .cal-month-label {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .cal-weekday {
+    text-align: center;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    padding: 0.5rem 0;
+  }
+
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all var(--transition);
+    color: var(--text-muted);
+    border: 1px solid transparent;
+  }
+  .cal-day:not(.disabled):not(.empty):hover { background: var(--bg-surface); border-color: var(--border); color: var(--text); }
+  .cal-day.available { color: var(--text); }
+  .cal-day.available:hover { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+  .cal-day.selected { background: var(--gold); color: var(--bg); font-weight: 500; }
+  .cal-day.disabled { color: var(--text-subtle); cursor: not-allowed; opacity: 0.4; }
+  .cal-day.empty { cursor: default; }
+  .cal-day.today { border-color: var(--gold); color: var(--gold); }
+
+  .slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .slot-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.75rem;
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all var(--transition);
+    width: 100%;
+  }
+  .slot-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+  .slot-btn.selected { background: var(--gold); border-color: var(--gold); color: var(--bg); font-weight: 500; }
+  .loading-text { grid-column: 1 / -1; font-size: 0.85rem; color: var(--text-subtle); font-style: italic; }
+  .no-slots {
+    grid-column: 1 / -1;
+    font-size: 0.85rem;
+    color: var(--text-subtle);
+    padding: 1rem;
+    text-align: center;
+    border: 1px dashed var(--border);
+    border-radius: 2px;
+  }
+</style>
+
+<script>
+  // ── Appointment type data ────────────────────────────────────────────────
+  const TYPES = {
+    erstgespraech: {
+      duration: '30 Minuten',
+      cost: 'Kostenlos',
+      format: 'Videocall (Link nach Buchung)',
+      agenda: [
+        'Ihr KI-Einsatz und Ihre Branche',
+        'Erste Einschätzung Ihrer Risikoklasse',
+        'Offene Fragen zu DSGVO / EU AI Act',
+        'Wie eine Zusammenarbeit aussehen könnte',
+      ],
+    },
+    folgetermin: {
+      duration: '60 Minuten',
+      cost: 'Nach Vereinbarung',
+      format: 'Videocall (Link nach Buchung)',
+      agenda: [
+        'Fortschritte und offene Punkte',
+        'Überprüfung umgesetzter Maßnahmen',
+        'Neue Anforderungen und Prioritäten',
+        'Nächste Schritte festlegen',
+      ],
+    },
+  };
+
+  const clockSVG = `<svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+  const chatSVG  = `<svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+  const heartSVG = `<svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+
+  function renderSidebar(type: 'erstgespraech' | 'folgetermin') {
+    const d = TYPES[type];
+    return `
+      <div class="booking-detail">${clockSVG}<div><span class="detail-label">Dauer</span><span class="detail-value">${d.duration}</span></div></div>
+      <div class="booking-detail">${chatSVG}<div><span class="detail-label">Format</span><span class="detail-value">${d.format}</span></div></div>
+      <div class="booking-detail">${heartSVG}<div><span class="detail-label">Kosten</span><span class="detail-value">${d.cost}</span></div></div>
+      <div class="booking-agenda">
+        <span class="agenda-label">Gesprächsthemen</span>
+        <ul>${d.agenda.map(i => `<li>${i}</li>`).join('')}</ul>
+      </div>
+    `;
+  }
+
+  // ── Type card selection ──────────────────────────────────────────────────
+  const cards = document.querySelectorAll<HTMLButtonElement>('.type-card');
+  const section = document.getElementById('booking-section')!;
+  const infoEl = document.getElementById('booking-info')!;
+  const typeField = document.getElementById('booking-type') as HTMLInputElement;
+
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      const type = card.dataset.type as 'erstgespraech' | 'folgetermin';
+
+      cards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+
+      infoEl.innerHTML = renderSidebar(type);
+      typeField.value = type;
+
+      if (section.style.display === 'none') {
+        section.style.display = 'block';
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // ── Calendar ─────────────────────────────────────────────────────────────
+  let currentYear = new Date().getFullYear();
+  let currentMonth = new Date().getMonth();
+  let selectedDate: string | null = null;
+  let selectedTime: string | null = null;
+
+  const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+  const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+  function formatDate(y: number, m: number, d: number) {
+    return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+
+  function formatDisplayDate(s: string) {
+    const [y, m, d] = s.split('-').map(Number);
+    return `${d}. ${MONTHS[m - 1]} ${y}`;
+  }
+
+  async function renderCalendar() {
+    const cal = document.getElementById('calendar')!;
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    let available: string[] = [];
+    try {
+      const res = await fetch(`/api/slots?year=${currentYear}&month=${currentMonth + 1}`);
+      available = (await res.json()).availableDates || [];
+    } catch {}
+
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay  = new Date(currentYear, currentMonth + 1, 0);
+    let offset = firstDay.getDay() - 1;
+    if (offset < 0) offset = 6;
+
+    let html = `<div class="calendar-header">
+      <button class="cal-nav" id="prev-month">‹</button>
+      <span class="cal-month-label">${MONTHS[currentMonth]} ${currentYear}</span>
+      <button class="cal-nav" id="next-month">›</button>
+    </div><div class="calendar-grid">`;
+
+    WEEKDAYS.forEach(d => { html += `<div class="cal-weekday">${d}</div>`; });
+    for (let i = 0; i < offset; i++) html += `<div class="cal-day empty"></div>`;
+
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      const dateStr  = formatDate(currentYear, currentMonth, d);
+      const cellDate = new Date(currentYear, currentMonth, d);
+      const isPast   = cellDate < today;
+      const isToday  = cellDate.getTime() === today.getTime();
+      let cls = 'cal-day';
+      if (isPast) cls += ' disabled';
+      else if (dateStr === selectedDate) cls += ' available selected';
+      else if (available.includes(dateStr)) cls += ' available';
+      else cls += ' disabled';
+      if (isToday && !isPast) cls += ' today';
+      html += `<div class="${cls}" data-date="${dateStr}">${d}</div>`;
+    }
+
+    html += '</div>';
+    cal.innerHTML = html;
+
+    document.getElementById('prev-month')!.addEventListener('click', () => {
+      if (currentMonth === 0) { currentMonth = 11; currentYear--; } else currentMonth--;
+      renderCalendar();
+    });
+    document.getElementById('next-month')!.addEventListener('click', () => {
+      if (currentMonth === 11) { currentMonth = 0; currentYear++; } else currentMonth++;
+      renderCalendar();
+    });
+    cal.querySelectorAll('.cal-day.available').forEach(el => {
+      el.addEventListener('click', () => {
+        selectedDate = (el as HTMLElement).dataset.date!;
+        renderCalendar();
+        showStep2(selectedDate);
+      });
+    });
+  }
+
+  async function showStep2(date: string) {
+    document.getElementById('step-1')!.style.display = 'none';
+    document.getElementById('step-2')!.style.display = 'block';
+    document.getElementById('selected-date-display')!.textContent = formatDisplayDate(date);
+
+    const grid = document.getElementById('slots-grid')!;
+    grid.innerHTML = '<p class="loading-text">Verfügbare Zeiten werden geladen...</p>';
+
+    try {
+      const res = await fetch(`/api/slots?date=${date}`);
+      const slots: string[] = (await res.json()).slots || [];
+
+      if (!slots.length) {
+        grid.innerHTML = '<div class="no-slots">Keine verfügbaren Zeiten an diesem Tag.<br/>Bitte wählen Sie ein anderes Datum.</div>';
+        return;
+      }
+
+      grid.innerHTML = slots.map(t =>
+        `<button class="slot-btn ${t === selectedTime ? 'selected' : ''}" data-time="${t}">${t} Uhr</button>`
+      ).join('');
+
+      grid.querySelectorAll('.slot-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedTime = (btn as HTMLElement).dataset.time!;
+          grid.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          setTimeout(showStep3, 300);
+        });
+      });
+    } catch {
+      grid.innerHTML = '<div class="no-slots">Fehler beim Laden der Zeiten. Bitte versuchen Sie es erneut.</div>';
+    }
+  }
+
+  function showStep3() {
+    document.getElementById('step-2')!.style.display = 'none';
+    document.getElementById('step-3')!.style.display = 'block';
+    document.getElementById('selected-slot-display')!.textContent =
+      `${formatDisplayDate(selectedDate!)} um ${selectedTime} Uhr`;
+    (document.getElementById('booking-date') as HTMLInputElement).value = selectedDate!;
+    (document.getElementById('booking-time') as HTMLInputElement).value = selectedTime!;
+  }
+
+  document.getElementById('back-to-date')?.addEventListener('click', () => {
+    document.getElementById('step-2')!.style.display = 'none';
+    document.getElementById('step-1')!.style.display = 'block';
+  });
+
+  document.getElementById('back-to-slots')?.addEventListener('click', () => {
+    document.getElementById('step-3')!.style.display = 'none';
+    document.getElementById('step-2')!.style.display = 'block';
+  });
+
+  document.getElementById('booking-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const feedback  = document.getElementById('booking-feedback')!;
+    const btnText   = document.getElementById('book-btn-text')!;
+    const btnLoading = document.getElementById('book-btn-loading')!;
+    const btn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+    const data = Object.fromEntries(new FormData(e.target as HTMLFormElement).entries());
+
+    if (!data.name || !data.email) {
+      feedback.innerHTML = '<div class="msg-error" style="margin-bottom:1rem;">Bitte füllen Sie alle Pflichtfelder aus.</div>';
+      return;
+    }
+    if (!data.privacy) {
+      feedback.innerHTML = '<div class="msg-error" style="margin-bottom:1rem;">Bitte stimmen Sie der Datenschutzerklärung zu.</div>';
+      return;
+    }
+
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline';
+    btn.disabled = true;
+    feedback.innerHTML = '';
+
+    try {
+      const res = await fetch('/api/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+
+      if (res.ok) {
+        document.getElementById('step-3')!.style.display = 'none';
+        document.getElementById('step-4')!.style.display = 'block';
+        document.getElementById('success-message')!.textContent =
+          `Ihr Termin am ${formatDisplayDate(data.date as string)} um ${data.time} Uhr wurde bestätigt. Eine Bestätigungs-E-Mail geht in Kürze an ${data.email}.`;
+      } else {
+        feedback.innerHTML = `<div class="msg-error" style="margin-bottom:1rem;">${result.error || 'Buchung fehlgeschlagen.'}</div>`;
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+        btn.disabled = false;
+      }
+    } catch {
+      feedback.innerHTML = '<div class="msg-error" style="margin-bottom:1rem;">Fehler bei der Buchung. Bitte kontaktieren Sie uns direkt.</div>';
+      btnText.style.display = 'inline';
+      btnLoading.style.display = 'none';
+      btn.disabled = false;
+    }
+  });
+
+  renderCalendar();
+</script>
