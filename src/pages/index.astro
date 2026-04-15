@@ -42,10 +42,6 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </div>
     </div>
-    <div class="hero-scroll-indicator">
-      <span>Scroll</span>
-      <div class="scroll-line"></div>
-    </div>
   </section>
 
   <!-- Trust bar -->
@@ -387,37 +383,6 @@ import Layout from '../layouts/Layout.astro';
     line-height: 1.5;
   }
 
-  .hero-scroll-indicator {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    opacity: 0.4;
-  }
-
-  .hero-scroll-indicator span {
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
-  .scroll-line {
-    width: 1px;
-    height: 40px;
-    background: linear-gradient(to bottom, var(--gold), transparent);
-    animation: scrollPulse 2s ease-in-out infinite;
-  }
-
-  @keyframes scrollPulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
-  }
-
   /* Trust bar */
   .trust-inner {
     display: flex;
@@ -466,6 +431,7 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    align-self: center;
   }
 
   .why-feature {
