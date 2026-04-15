@@ -353,7 +353,6 @@ import Layout from '../../../layouts/Layout.astro';
 </div>
 
 <script>
-let pw = '';
 let appointments: any[] = [];
 let pageviews: any[] = [];
 let selectedMonth = new Date().getMonth() + 1;
@@ -364,23 +363,29 @@ const loginScreen = document.getElementById('login-screen')!;
 const metricsShell = document.getElementById('metrics-shell')!;
 const loginErr = document.getElementById('login-err')!;
 
+async function loadData(): Promise<boolean> {
+  const res = await fetch('/api/admin/slots');
+  if (!res.ok) return false;
+  const data = await res.json();
+  appointments = data.appointments || [];
+  pageviews = data.pageviews || [];
+  loginScreen.style.display = 'none';
+  metricsShell.style.display = 'block';
+  setupMonthNav();
+  renderMetrics();
+  return true;
+}
+
 async function tryLogin() {
   const val = (document.getElementById('pw') as HTMLInputElement).value;
-  const res = await fetch('/api/admin/slots', { headers: { 'x-admin-password': val } });
-  if (res.ok) {
-    pw = val;
-    sessionStorage.setItem('admin_pw', val);
-    const data = await res.json();
-    appointments = data.appointments || [];
-    pageviews = data.pageviews || [];
-    console.log('LOGIN - appointments:', appointments.length, 'pageviews:', pageviews.length);
-    loginScreen.style.display = 'none';
-    metricsShell.style.display = 'block';
-    renderMetrics();
-  } else {
-    loginErr.textContent = 'Falsches Passwort.';
-    loginErr.style.display = 'block';
-  }
+  const res = await fetch('/api/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: val }),
+  });
+  if (res.ok && await loadData()) return;
+  loginErr.textContent = 'Falsches Passwort.';
+  loginErr.style.display = 'block';
 }
 
 document.getElementById('login-btn')!.addEventListener('click', tryLogin);
@@ -388,9 +393,8 @@ document.getElementById('login-btn')!.addEventListener('click', tryLogin);
   if (e.key === 'Enter') tryLogin();
 });
 
-document.getElementById('logout-btn')!.addEventListener('click', () => {
-  pw = '';
-  sessionStorage.removeItem('admin_pw');
+document.getElementById('logout-btn')!.addEventListener('click', async () => {
+  await fetch('/api/admin/logout', { method: 'POST' });
   metricsShell.style.display = 'none';
   loginScreen.style.display = 'flex';
   (document.getElementById('pw') as HTMLInputElement).value = '';
@@ -613,24 +617,9 @@ function setupMonthNav() {
   });
 }
 
-// Auto-login check
+// Auto-login check (server validates cookie)
 (async () => {
-  const savedPw = sessionStorage.getItem('admin_pw') || 'claritas2024';
-  const res = await fetch('/api/admin/slots', { headers: { 'x-admin-password': savedPw } });
-  if (res.ok) {
-    pw = savedPw;
-    sessionStorage.setItem('admin_pw', savedPw);
-    const data = await res.json();
-    appointments = data.appointments || [];
-    pageviews = data.pageviews || [];
-    console.log('LOADED - appointments:', appointments.length, 'pageviews:', pageviews.length);
-    loginScreen.style.display = 'none';
-    metricsShell.style.display = 'block';
-    setupMonthNav();
-    renderMetrics();
-  } else {
-    loginScreen.style.display = 'flex';
-  }
+  if (!(await loadData())) loginScreen.style.display = 'flex';
 })();
 </script>
 </Layout>

@@ -1,8 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
+export const prerender = true;
 ---
 
-<Layout title="Datenschutzerklärung">
+<Layout title="Datenschutzerklärung" ogTitle="Datenschutzerklärung">
   <section class="legal-page">
     <div class="container legal-inner">
       <span class="section-label">Rechtliches</span>
@@ -28,7 +29,11 @@ import Layout from '../layouts/Layout.astro';
           <ul>
             <li><strong>Kontaktformular:</strong> Name, E-Mail-Adresse, Unternehmen (optional), Nachricht</li>
             <li><strong>Terminbuchung:</strong> Name, E-Mail-Adresse, Unternehmen (optional), gewünschter Termin, Thema (optional)</li>
-            <li><strong>Webserver-Logs:</strong> IP-Adresse, Datum/Uhrzeit des Zugriffs, aufgerufene URL (werden nach 7 Tagen gelöscht)</li>
+            <li><strong>Newsletter:</strong> E-Mail-Adresse, bevorzugte Sprache; Zeitpunkt der Anmeldung und Bestätigung (Double-Opt-In)</li>
+            <li><strong>Reichweitenmessung:</strong> Zur Messung der Websitenutzung erfassen wir anonymisiert aufgerufene Seiten,
+              Referrer sowie eine zufällig erzeugte Session-ID (keine IP-Speicherung, keine Drittanbieter-Analyse, kein Cross-Site-Tracking).</li>
+            <li><strong>Webserver-Logs:</strong> Beim Hosting durch Vercel können technische Zugriffsdaten (u.&nbsp;a. IP-Adresse,
+              User-Agent, Zeitstempel) für kurze Zeit zur Abwehr von Angriffen verarbeitet werden.</li>
           </ul>
         </div>
 
@@ -36,27 +41,50 @@ import Layout from '../layouts/Layout.astro';
           <h3>3. Rechtsgrundlagen</h3>
           <p>
             Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO
-            (Vertragsanbahnung) für Kontaktanfragen und Terminbuchungen sowie
-            Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse) für Server-Logs.
+            (Vertragsanbahnung) für Kontaktanfragen und Terminbuchungen,
+            Art. 6 Abs. 1 lit. a DSGVO (Einwilligung) für den Newsletter
+            sowie Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an
+            einem sicheren und statistisch auswertbaren Betrieb der Website)
+            für Reichweitenmessung und Server-Logs.
           </p>
         </div>
 
         <div class="legal-block">
-          <h3>4. Speicherdauer</h3>
+          <h3>4. Auftragsverarbeiter / Empfänger</h3>
+          <p>
+            Zur Bereitstellung dieser Website setzen wir folgende Dienstleister ein,
+            mit denen jeweils ein Auftragsverarbeitungsvertrag (Art. 28 DSGVO) besteht:
+          </p>
+          <ul>
+            <li><strong>Vercel Inc.</strong> (Hosting, Frankfurt/EU-Region) — Bereitstellung der Website und Serverless-Infrastruktur.</li>
+            <li><strong>Resend (Drip Inc.)</strong> — Versand transaktionaler E-Mails (Terminbestätigungen, Newsletter).</li>
+          </ul>
+          <p style="margin-top:1rem;">
+            Eine weitere Weitergabe an Dritte erfolgt nicht, sofern dies nicht zur
+            Vertragserfüllung erforderlich oder gesetzlich vorgeschrieben ist.
+          </p>
+        </div>
+
+        <div class="legal-block">
+          <h3>5. Speicherdauer</h3>
           <p>
             Kontaktanfragen und Terminbuchungen werden für 24 Monate gespeichert,
             sofern keine gesetzliche Aufbewahrungspflicht besteht oder eine
-            Geschäftsbeziehung zustande kommt. Server-Logs werden nach 7 Tagen
-            automatisch gelöscht.
+            Geschäftsbeziehung zustande kommt. Newsletter-Daten werden bis zum
+            Widerruf der Einwilligung gespeichert. Daten zur Reichweitenmessung
+            werden nach 12 Monaten aggregiert bzw. gelöscht. Server-Logs werden
+            nach kurzer Zeit (bei Vercel i.&nbsp;d.&nbsp;R. innerhalb von 30 Tagen) gelöscht.
           </p>
         </div>
 
         <div class="legal-block">
-          <h3>5. Ihre Rechte</h3>
+          <h3>6. Ihre Rechte</h3>
           <p>
             Sie haben das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung
             (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung
             (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch (Art. 21).
+            Erteilte Einwilligungen (z.&nbsp;B. zum Newsletter) können Sie jederzeit
+            mit Wirkung für die Zukunft widerrufen.
             Zur Ausübung Ihrer Rechte kontaktieren Sie uns unter
             <a href="mailto:hallo@claritas-ai.consulting">hallo@claritas-ai.consulting</a>.
           </p>
@@ -66,25 +94,19 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <div class="legal-block">
-          <h3>6. Keine Weitergabe an Dritte</h3>
+          <h3>7. Cookies &amp; Browser-Speicher</h3>
           <p>
-            Ihre Daten werden nicht an Dritte weitergegeben, es sei denn, dies ist
-            zur Erfüllung eines Vertrags erforderlich oder gesetzlich vorgeschrieben.
-            Wir verwenden keine Analyse-Tools, Tracking-Cookies oder Social-Media-Pixel.
-          </p>
-        </div>
-
-        <div class="legal-block">
-          <h3>7. Cookies</h3>
-          <p>
-            Diese Website verwendet ausschließlich technisch notwendige Session-Cookies.
-            Es werden keine Marketing- oder Tracking-Cookies eingesetzt.
+            Diese Website setzt keine Marketing- oder Tracking-Cookies ein. Technisch
+            notwendig verwendet werden: ein Session-Eintrag im <em>sessionStorage</em>
+            zur Reichweitenmessung (pseudonyme Session-ID, wird beim Schließen des
+            Browser-Tabs gelöscht) sowie — nach erfolgreicher Anmeldung im
+            Admin-Bereich — ein httpOnly-Sicherheits-Cookie.
           </p>
         </div>
       </div>
 
       <p style="margin-top:3rem;font-size:0.8rem;color:var(--text-subtle);">
-        Stand: April 2025
+        Stand: April 2026
       </p>
     </div>
   </section>

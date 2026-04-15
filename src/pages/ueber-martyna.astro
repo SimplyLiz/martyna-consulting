@@ -1,5 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
+import portrait from '../assets/martyna-kwiecien.jpg';
 ---
 
 <Layout title="Über mich" description="Martyna Kwiecien – Juristin und AI Compliance Consultant. Erfahrung an der Schnittstelle von Recht, Technologie und Regulierung.">
@@ -21,8 +23,9 @@ import Layout from '../layouts/Layout.astro';
         <p class="about-lead" style="margin-top:1rem;">
           Heute begleite ich Unternehmen durch den EU AI Act, die DSGVO und
           verwandte Regulierung — praxisnah, direkt und ohne juristische
-          Vernebelungstaktik. Nicht als Anwältin, sondern als Beraterin, die
-          versteht, wie Recht und Technologie ineinandergreifen.
+          Vernebelungstaktik. Nicht als eingetragene Rechtsanwältin, sondern als
+          Juristin und Beraterin, die versteht, wie Recht und Technologie
+          ineinandergreifen.
         </p>
         <div class="about-links">
           <a
@@ -41,12 +44,12 @@ import Layout from '../layouts/Layout.astro';
       </div>
       <div class="about-photo fade-up fade-up-delay-2">
         <div class="photo-frame">
-          <img
-            src="/martyna-kwiecien.jpg"
+          <Image
+            src={portrait}
             alt="Martyna Kwiecien – AI Compliance Consultant"
             class="portrait-img"
-            width="675"
-            height="900"
+            widths={[300, 600, 900]}
+            sizes="(max-width: 900px) 220px, 300px"
             loading="eager"
           />
           <div class="photo-caption">

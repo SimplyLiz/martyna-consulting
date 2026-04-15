@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { randomBytes } from 'crypto';
 import { readData, writeData } from '../../../lib/storage';
 import { sendNewsletterToSubscriber } from '../../../lib/email';
+import { isAuthenticated } from '../../../lib/auth';
 
 type Lang = 'de' | 'en' | 'pl';
 
@@ -24,12 +25,6 @@ interface Newsletter {
   updatedAt: string;
   sentAt?: string;
   recipientCount?: number;
-}
-
-function checkAuth(request: Request): boolean {
-  const h = request.headers.get('x-admin-password');
-  const pw = process.env.ADMIN_PASSWORD || 'claritas2024';
-  return h === pw;
 }
 
 async function loadNewsletters(): Promise<Newsletter[]> {
@@ -80,14 +75,14 @@ async function sendOne(nl: Newsletter): Promise<number> {
   return sent;
 }
 
-export const GET: APIRoute = async ({ request }) => {
-  if (!checkAuth(request)) return json({ error: 'Unauthorized' }, 401);
+export const GET: APIRoute = async ({ cookies }) => {
+  if (!isAuthenticated(cookies)) return json({ error: 'Unauthorized' }, 401);
   const [newsletters, subscribers] = await Promise.all([loadNewsletters(), loadSubscribers()]);
   return json({ newsletters, subscribers });
 };
 
-export const POST: APIRoute = async ({ request }) => {
-  if (!checkAuth(request)) return json({ error: 'Unauthorized' }, 401);
+export const POST: APIRoute = async ({ request, cookies }) => {
+  if (!isAuthenticated(cookies)) return json({ error: 'Unauthorized' }, 401);
 
   try {
     const { action, payload } = await request.json();

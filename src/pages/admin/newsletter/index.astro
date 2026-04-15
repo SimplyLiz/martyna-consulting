@@ -442,7 +442,6 @@ interface Subscriber {
   status: 'active' | 'unsubscribed';
 }
 
-let pw = '';
 let newsletters: Newsletter[] = [];
 let subscribers: Subscriber[] = [];
 let currentId: string | null = null;
@@ -456,22 +455,28 @@ const loginScreen = document.getElementById('login-screen')!;
 const shell = document.getElementById('nl-shell')!;
 const loginErr = document.getElementById('login-err')!;
 
+async function loadData(): Promise<boolean> {
+  const res = await fetch('/api/admin/newsletter');
+  if (!res.ok) return false;
+  const data = await res.json();
+  newsletters = data.newsletters || [];
+  subscribers = data.subscribers || [];
+  loginScreen.style.display = 'none';
+  shell.style.display = 'block';
+  renderAll();
+  return true;
+}
+
 async function tryLogin() {
   const val = (document.getElementById('pw') as HTMLInputElement).value;
-  const res = await fetch('/api/admin/newsletter', { headers: { 'x-admin-password': val } });
-  if (res.ok) {
-    pw = val;
-    sessionStorage.setItem('admin_pw', val);
-    const data = await res.json();
-    newsletters = data.newsletters || [];
-    subscribers = data.subscribers || [];
-    loginScreen.style.display = 'none';
-    shell.style.display = 'block';
-    renderAll();
-  } else {
-    loginErr.textContent = 'Falsches Passwort.';
-    loginErr.style.display = 'block';
-  }
+  const res = await fetch('/api/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: val }),
+  });
+  if (res.ok && await loadData()) return;
+  loginErr.textContent = 'Falsches Passwort.';
+  loginErr.style.display = 'block';
 }
 
 (document.getElementById('login-btn') as HTMLButtonElement).addEventListener('click', tryLogin);
@@ -479,16 +484,11 @@ async function tryLogin() {
   if (e.key === 'Enter') tryLogin();
 });
 
-// Autologin if password already in session
-const stored = sessionStorage.getItem('admin_pw');
-if (stored) {
-  (document.getElementById('pw') as HTMLInputElement).value = stored;
-  tryLogin();
-}
+// Try cookie-based auto-login
+loadData();
 
-document.getElementById('logout-btn')!.addEventListener('click', () => {
-  pw = '';
-  sessionStorage.removeItem('admin_pw');
+document.getElementById('logout-btn')!.addEventListener('click', async () => {
+  await fetch('/api/admin/logout', { method: 'POST' });
   shell.style.display = 'none';
   loginScreen.style.display = 'flex';
 });
@@ -496,7 +496,7 @@ document.getElementById('logout-btn')!.addEventListener('click', () => {
 async function api(action: string, payload: object) {
   const res = await fetch('/api/admin/newsletter', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action, payload }),
   });
   const data = await res.json();
@@ -512,7 +512,7 @@ function showSave(ok: boolean) {
 }
 
 async function reload() {
-  const res = await fetch('/api/admin/newsletter', { headers: { 'x-admin-password': pw } });
+  const res = await fetch('/api/admin/newsletter');
   if (res.ok) {
     const data = await res.json();
     newsletters = data.newsletters || [];

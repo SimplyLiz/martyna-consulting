@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { readData, writeData } from '../../lib/storage';
+import { rateLimit } from '../../lib/rateLimit';
 
 interface Appointment {
   id: string;
@@ -27,7 +28,10 @@ async function saveAppointments(appointments: Appointment[]): Promise<void> {
   await writeData('appointments.json', JSON.stringify(appointments, null, 2));
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  const rl = rateLimit('book', clientAddress || 'unknown', 5, 60 * 60 * 1000);
+  if (!rl.ok) return json({ error: 'Zu viele Buchungsversuche. Bitte später erneut versuchen.' }, 429);
+
   try {
     const body = await request.json();
     const { date, time, name, email, company, topic } = body;

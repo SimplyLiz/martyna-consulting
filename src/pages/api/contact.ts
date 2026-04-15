@@ -1,7 +1,13 @@
 import type { APIRoute } from 'astro';
 import { appendData } from '../../lib/storage';
+import { rateLimit } from '../../lib/rateLimit';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  const rl = rateLimit('contact', clientAddress || 'unknown', 5, 60 * 60 * 1000);
+  if (!rl.ok) {
+    return json({ error: 'Zu viele Anfragen. Bitte später erneut versuchen.' }, 429);
+  }
+
   try {
     const body = await request.json();
     const { name, email, company, subject, message } = body;

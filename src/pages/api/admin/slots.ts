@@ -1,17 +1,12 @@
 import type { APIRoute } from 'astro';
 import { readData, writeData } from '../../../lib/storage';
 import { sendConfirmationEmail, sendRejectionEmail, sendRescheduleEmail, sendMessageEmail } from '../../../lib/email';
+import { isAuthenticated } from '../../../lib/auth';
 
 interface PageView {
   path: string;
   timestamp: string;
   referrer?: string;
-}
-
-function checkAuth(request: Request): boolean {
-  const authHeader = request.headers.get('x-admin-password');
-  const password = process.env.ADMIN_PASSWORD || 'claritas2024';
-  return authHeader === password;
 }
 
 async function loadConfig() {
@@ -28,8 +23,8 @@ async function loadAppointments() {
   }
 }
 
-export const GET: APIRoute = async ({ request }) => {
-  if (!checkAuth(request)) return json({ error: 'Unauthorized' }, 401);
+export const GET: APIRoute = async ({ cookies }) => {
+  if (!isAuthenticated(cookies)) return json({ error: 'Unauthorized' }, 401);
   try {
     const config = await loadConfig();
     const appointments = await loadAppointments();
@@ -44,8 +39,8 @@ export const GET: APIRoute = async ({ request }) => {
   }
 };
 
-export const POST: APIRoute = async ({ request }) => {
-  if (!checkAuth(request)) return json({ error: 'Unauthorized' }, 401);
+export const POST: APIRoute = async ({ request, cookies }) => {
+  if (!isAuthenticated(cookies)) return json({ error: 'Unauthorized' }, 401);
 
   try {
     const body = await request.json();

@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
 import { randomBytes } from 'crypto';
 import { readData, writeData } from '../../../lib/storage';
-import { sendSubscriberWelcome } from '../../../lib/email';
+import { sendSubscriberConfirm } from '../../../lib/email';
+import { rateLimit } from '../../../lib/rateLimit';
 
 type Lang = 'de' | 'en' | 'pl';
 
@@ -10,8 +11,10 @@ interface Subscriber {
   email: string;
   language: Lang;
   subscribedAt: string;
-  status: 'active' | 'unsubscribed';
+  confirmedAt?: string;
+  status: 'pending' | 'active' | 'unsubscribed';
   token: string;
+  confirmToken?: string;
 }
 
 async function loadSubscribers(): Promise<Subscriber[]> {
@@ -23,7 +26,10 @@ async function loadSubscribers(): Promise<Subscriber[]> {
   }
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  const rl = rateLimit('newsletter', clientAddress || 'unknown', 5, 60 * 60 * 1000);
+  if (!rl.ok) return json({ error: 'Too many requests' }, 429);
+
   try {
     const body = await request.json();
     const email = String(body.email || '').trim().toLowerCase();
@@ -39,12 +45,16 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (existing) {
       existing.language = language;
-      if (existing.status === 'unsubscribed') {
-        existing.status = 'active';
+      if (existing.status === 'unsubscribed' || existing.status === 'pending') {
+        existing.status = 'pending';
+        existing.confirmToken = randomBytes(24).toString('hex');
         existing.subscribedAt = new Date().toISOString();
+        await writeData('subscribers.json', JSON.stringify(subs, null, 2));
+        sendSubscriberConfirm(existing).catch(err => console.error('[Newsletter confirm]', err));
+        return json({ ok: true, pending: true });
       }
       await writeData('subscribers.json', JSON.stringify(subs, null, 2));
-      return json({ ok: true, resubscribed: existing.status === 'active' });
+      return json({ ok: true, alreadyActive: true });
     }
 
     const sub: Subscriber = {
@@ -52,15 +62,16 @@ export const POST: APIRoute = async ({ request }) => {
       email,
       language,
       subscribedAt: new Date().toISOString(),
-      status: 'active',
+      status: 'pending',
       token: randomBytes(24).toString('hex'),
+      confirmToken: randomBytes(24).toString('hex'),
     };
     subs.push(sub);
     await writeData('subscribers.json', JSON.stringify(subs, null, 2));
 
-    sendSubscriberWelcome(sub).catch(err => console.error('[Newsletter welcome]', err));
+    sendSubscriberConfirm(sub).catch(err => console.error('[Newsletter confirm]', err));
 
-    return json({ ok: true });
+    return json({ ok: true, pending: true });
   } catch (err) {
     console.error('[Newsletter subscribe]', err);
     return json({ error: 'Internal error' }, 500);
