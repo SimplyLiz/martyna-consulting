@@ -153,41 +153,75 @@ import Layout from '../layouts/Layout.astro';
       <div class="section-header">
         <span class="section-label">Leistungen</span>
         <span class="gold-rule"></span>
-        <h2>Was wir für Sie tun</h2>
+        <h2>Was Claritas<br /><em>für Sie leistet</em></h2>
       </div>
 
       <div class="services-grid">
         <a href="/leistungen#eu-ai-act" class="service-card">
-          <span class="service-num">01</span>
+          <div class="service-top">
+            <span class="service-num">01</span>
+            <svg class="service-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v1m0 16v1M4.22 4.22l.707.707m13.86 13.86.707.707M3 12h1m16 0h1M4.927 19.073l.707-.707M18.364 4.636l.707-.707"/>
+              <path d="M7 12l2.5 5h5L17 12"/>
+              <line x1="5.5" y1="17" x2="18.5" y2="17"/>
+              <line x1="12" y1="7" x2="7" y2="12"/>
+              <line x1="12" y1="7" x2="17" y2="12"/>
+              <circle cx="12" cy="7" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+          </div>
           <div class="service-body">
             <h3>EU AI Act Compliance</h3>
             <p>Von der Risikoklassifizierung bis zur vollständigen technischen Dokumentation. Wir begleiten Sie durch alle Anforderungen des EU AI Act.</p>
           </div>
-          <span class="service-arrow">→</span>
+          <span class="service-arrow">→ <span class="service-arrow-label">Mehr erfahren</span></span>
         </a>
         <a href="/leistungen#dsgvo" class="service-card">
-          <span class="service-num">02</span>
+          <div class="service-top">
+            <span class="service-num">02</span>
+            <svg class="service-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2l7.5 3v5c0 4.5-3 8.5-7.5 10C7.5 18.5 4.5 14.5 4.5 10V5L12 2z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+          </div>
           <div class="service-body">
             <h3>DSGVO &amp; Datenschutz</h3>
             <p>Datenschutz-Folgenabschätzungen (DPIA), Verarbeitungsverzeichnisse, Privacy by Design — rechtssicher und praxisnah.</p>
           </div>
-          <span class="service-arrow">→</span>
+          <span class="service-arrow">→ <span class="service-arrow-label">Mehr erfahren</span></span>
         </a>
         <a href="/leistungen#governance" class="service-card">
-          <span class="service-num">03</span>
+          <div class="service-top">
+            <span class="service-num">03</span>
+            <svg class="service-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="2" width="6" height="4" rx="1"/>
+              <rect x="2" y="18" width="6" height="4" rx="1"/>
+              <rect x="16" y="18" width="6" height="4" rx="1"/>
+              <line x1="12" y1="6" x2="12" y2="13"/>
+              <line x1="5" y1="18" x2="5" y2="13"/>
+              <line x1="19" y1="18" x2="19" y2="13"/>
+              <line x1="5" y1="13" x2="19" y2="13"/>
+            </svg>
+          </div>
           <div class="service-body">
             <h3>KI-Governance</h3>
             <p>Interne Richtlinien für den verantwortungsvollen KI-Einsatz, Risikomanagement-Frameworks und Ethik-Guidelines.</p>
           </div>
-          <span class="service-arrow">→</span>
+          <span class="service-arrow">→ <span class="service-arrow-label">Mehr erfahren</span></span>
         </a>
         <a href="/leistungen#schulungen" class="service-card">
-          <span class="service-num">04</span>
+          <div class="service-top">
+            <span class="service-num">04</span>
+            <svg class="service-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 10L12 4 2 10l10 6 10-6z"/>
+              <path d="M6 12.5v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/>
+              <line x1="22" y1="10" x2="22" y2="16"/>
+            </svg>
+          </div>
           <div class="service-body">
             <h3>Schulungen &amp; Workshops</h3>
             <p>Maßgeschneiderte Trainings für Führungskräfte, Entwickler und Compliance-Teams — verständlich, nicht akademisch.</p>
           </div>
-          <span class="service-arrow">→</span>
+          <span class="service-arrow">→ <span class="service-arrow-label">Mehr erfahren</span></span>
         </a>
       </div>
     </div>
@@ -465,6 +499,7 @@ import Layout from '../layouts/Layout.astro';
 
   /* Services teaser */
   .section-header { margin-bottom: 3rem; }
+  .section-header h2 em { font-style: italic; color: var(--gold); font-weight: 300; }
 
   .services-grid {
     display: grid;
@@ -490,6 +525,13 @@ import Layout from '../layouts/Layout.astro';
     transform: translateX(4px);
   }
 
+  .service-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+  }
+
   .service-num {
     font-family: var(--font-display);
     font-size: 3rem;
@@ -497,6 +539,16 @@ import Layout from '../layouts/Layout.astro';
     color: var(--text-subtle);
     line-height: 1;
   }
+
+  .service-icon {
+    width: 28px;
+    height: 28px;
+    color: var(--gold);
+    opacity: 0.7;
+    transition: opacity var(--transition);
+  }
+
+  .service-card:hover .service-icon { opacity: 1; }
 
   .service-body h3 {
     font-size: 1.4rem;
@@ -511,6 +563,23 @@ import Layout from '../layouts/Layout.astro';
     color: var(--text-subtle);
     transition: all var(--transition);
     margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .service-arrow-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateX(6px);
+    transition: opacity var(--transition), transform var(--transition);
+  }
+
+  .service-card:hover .service-arrow-label {
+    opacity: 1;
+    transform: translateX(0);
   }
 
   /* Process */
