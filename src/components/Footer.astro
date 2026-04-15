@@ -8,7 +8,7 @@ const currentYear = new Date().getFullYear();
     <div class="footer-brand">
       <div class="logo-wrap">
         <span class="logo-mark">C</span>
-        <div>
+        <div class="logo-text">
           <span class="logo-name">Claritas AI Consulting</span>
           <span class="logo-tagline">Klarheit im Regulierungsdickicht</span>
         </div>
@@ -38,7 +38,7 @@ const currentYear = new Date().getFullYear();
         <span class="footer-col-title">Unternehmen</span>
         <a href="/ueber-martyna">Über mich</a>
         <a href="/kontakt">Kontakt</a>
-        <a href="/termin">Termin buchen</a>
+        <a href="/termin">Termin vereinbaren</a>
       </div>
       <div class="footer-col">
         <span class="footer-col-title">Rechtliches</span>
@@ -96,8 +96,13 @@ const currentYear = new Date().getFullYear();
     flex-shrink: 0;
   }
 
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
   .logo-name {
-    display: block;
     font-family: var(--font-display);
     font-size: 1rem;
     font-weight: 600;
@@ -105,12 +110,10 @@ const currentYear = new Date().getFullYear();
   }
 
   .logo-tagline {
-    display: block;
     font-size: 0.6rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--gold);
-    margin-top: 2px;
   }
 
   .footer-desc {
