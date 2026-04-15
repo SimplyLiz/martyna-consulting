@@ -9,7 +9,8 @@ interface Appointment {
   email: string;
   company?: string;
   topic?: string;
-  status: 'confirmed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'rejected' | 'cancelled';
+  adminMessage?: string;
   createdAt: string;
 }
 
@@ -46,7 +47,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const appointments = await loadAppointments();
     const alreadyBooked = appointments.some(
-      a => a.date === date && a.time === time && a.status !== 'cancelled'
+      a => a.date === date && a.time === time && a.status !== 'cancelled' && a.status !== 'rejected'
     );
 
     if (alreadyBooked) {
@@ -61,7 +62,7 @@ export const POST: APIRoute = async ({ request }) => {
       email: String(email).slice(0, 200),
       company: String(company || '').slice(0, 200),
       topic: String(topic || '').slice(0, 1000),
-      status: 'confirmed',
+      status: 'pending',
       createdAt: new Date().toISOString(),
     };
 

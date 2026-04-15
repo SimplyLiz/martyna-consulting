@@ -1,0 +1,635 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout title="Metrics">
+<style>
+  .metrics-wrap {
+    min-height: 100vh;
+    padding-top: 72px;
+    background: var(--bg);
+  }
+
+  .metrics-shell { display: none; }
+
+  .metrics-topbar {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    padding: 0 2rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 72px;
+    z-index: 10;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .topbar-left a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 200ms;
+  }
+
+  .topbar-left a:hover,
+  .topbar-left a.active {
+    color: var(--gold);
+  }
+
+  .topbar-left span { color: var(--gold); }
+
+  .topbar-right { display: flex; align-items: center; gap: 1rem; }
+
+  .logout-btn {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.4rem 0.9rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 200ms;
+  }
+
+  .logout-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .metrics-body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .panel-head {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-head h3 {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .panel-body { padding: 1.5rem; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-card {
+    text-align: center;
+    padding: 1.5rem;
+    background: var(--bg-surface);
+    border-radius: 4px;
+  }
+
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-num.visits { color: var(--gold); }
+  .stat-num.pending { color: #f2c94c; }
+  .stat-num.confirmed { color: #6fcf97; }
+  .stat-num.rejected { color: #eb5757; }
+
+  .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .chart-svg {
+    min-height: 220px;
+  }
+
+  .mini-cal-nav {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 200ms;
+  }
+
+  .mini-cal-nav:hover { border-color: var(--gold); color: var(--gold); }
+
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .bar {
+    width: 100%;
+    background: var(--gold);
+    border-radius: 2px 2px 0 0;
+    min-height: 4px;
+    transition: height 300ms;
+  }
+
+  .bar-label {
+    font-size: 0.65rem;
+    color: var(--text-subtle);
+    white-space: nowrap;
+  }
+
+  .bar-num {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .page-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .page-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+
+  .page-row:last-child { border-bottom: none; }
+
+  .page-path { color: var(--text); }
+
+  .page-count {
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-subtle);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 700px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+<div class="metrics-wrap">
+  <!-- Login -->
+  <div class="login-screen" id="login-screen" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 72px);">
+      <div style="width:360px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:2.5rem;">
+        <h2 style="margin-bottom:1.5rem;">Anmeldung</h2>
+        <div class="form-group" style="margin-bottom:1rem;">
+          <label style="display:block;font-size:0.8rem;margin-bottom:0.5rem;color:var(--text-muted);">Passwort</label>
+          <input type="password" id="pw" style="width:100%;padding:0.75rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:var(--font-body);" />
+        </div>
+        <p id="login-err" style="display:none;margin-top:0.5rem;font-size:0.82rem;color:#eb5757;"></p>
+        <button id="login-btn" style="width:100%;margin-top:1.25rem;padding:0.75rem;background:var(--gold);border:none;border-radius:2px;color:var(--bg);font-weight:500;cursor:pointer;">
+          Anmelden
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metrics shell -->
+  <div class="metrics-shell" id="metrics-shell">
+    <div class="metrics-topbar">
+      <div class="topbar-left">
+        <span>Claritas</span> ·
+        <a href="/admin">Termine</a> ·
+        <a href="/admin/metrics" class="active">Metrics</a>
+      </div>
+      <div class="topbar-right">
+        <button class="logout-btn" id="logout-btn">Abmelden</button>
+      </div>
+    </div>
+
+    <div class="metrics-body">
+      <!-- Visitors stats -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Besucher</h3>
+        </div>
+        <div class="panel-body">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-num visits" id="stat-visits">0</div>
+              <div class="stat-label">Eindeutige Besucher</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="stat-unique">0</div>
+              <div class="stat-label">Seitenaufrufe</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="stat-today">0</div>
+              <div class="stat-label">Heute</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="stat-thisweek">0</div>
+              <div class="stat-label">Diese Woche</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Booking stats -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Buchungen</h3>
+        </div>
+        <div class="panel-body">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-num" id="stat-total">0</div>
+              <div class="stat-label">Gesamt</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num pending" id="stat-pending">0</div>
+              <div class="stat-label">Offen</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num confirmed" id="stat-confirmed">0</div>
+              <div class="stat-label">Bestätigt</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num rejected" id="stat-rejected">0</div>
+              <div class="stat-label">Abgelehnt</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top pages -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Meistbesuchte Seiten</h3>
+        </div>
+        <div class="panel-body">
+          <div class="page-list" id="page-list">
+            <div class="empty-state">Keine Daten vorhanden.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily chart by month -->
+      <div class="panel">
+        <div class="panel-head" style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 id="daily-chart-title">Tägliche Besucher</h3>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <button class="mini-cal-nav" id="month-prev">‹</button>
+            <span id="month-label" style="font-size:0.8rem;min-width:100px;text-align:center;">April 2026</span>
+            <button class="mini-cal-nav" id="month-next">›</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="chart-svg" id="daily-chart">
+            <div class="empty-state">Keine Daten vorhanden.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly overview by year -->
+      <div class="panel">
+        <div class="panel-head" style="display:flex;justify-content:space-between;align-items:center;">
+          <h3>Monatliche Übersicht</h3>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <button class="mini-cal-nav" id="year-prev">‹</button>
+            <span id="year-label" style="font-size:0.8rem;min-width:60px;text-align:center;">2026</span>
+            <button class="mini-cal-nav" id="year-next">›</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="chart-svg" id="year-chart">
+            <div class="empty-state">Keine Daten vorhanden.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let pw = '';
+let appointments: any[] = [];
+let pageviews: any[] = [];
+let selectedMonth = new Date().getMonth() + 1;
+let selectedYear = new Date().getFullYear();
+let selectedYearChart = new Date().getFullYear();
+
+const loginScreen = document.getElementById('login-screen')!;
+const metricsShell = document.getElementById('metrics-shell')!;
+const loginErr = document.getElementById('login-err')!;
+
+async function tryLogin() {
+  const val = (document.getElementById('pw') as HTMLInputElement).value;
+  const res = await fetch('/api/admin/slots', { headers: { 'x-admin-password': val } });
+  if (res.ok) {
+    pw = val;
+    sessionStorage.setItem('admin_pw', val);
+    const data = await res.json();
+    appointments = data.appointments || [];
+    pageviews = data.pageviews || [];
+    console.log('LOGIN - appointments:', appointments.length, 'pageviews:', pageviews.length);
+    loginScreen.style.display = 'none';
+    metricsShell.style.display = 'block';
+    renderMetrics();
+  } else {
+    loginErr.textContent = 'Falsches Passwort.';
+    loginErr.style.display = 'block';
+  }
+}
+
+document.getElementById('login-btn')!.addEventListener('click', tryLogin);
+(document.getElementById('pw') as HTMLInputElement).addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') tryLogin();
+});
+
+document.getElementById('logout-btn')!.addEventListener('click', () => {
+  pw = '';
+  sessionStorage.removeItem('admin_pw');
+  metricsShell.style.display = 'none';
+  loginScreen.style.display = 'flex';
+  (document.getElementById('pw') as HTMLInputElement).value = '';
+});
+
+function getPageName(path: string): string {
+  const names: Record<string, string> = {
+    '/': 'Startseite',
+    '/leistungen': 'Leistungen',
+    '/ueber-martyna': 'Über Martyna',
+    '/termin': 'Termin buchen',
+    '/kontakt': 'Kontakt',
+    '/impressum': 'Impressum',
+    '/datenschutz': 'Datenschutz',
+  };
+  return names[path] || path;
+}
+
+function renderMetrics() {
+  // Visit stats - pageviews = all page loads, unique visitors = unique session IDs
+  const uniqueSids = new Set(pageviews.map((v: any) => v.sid).filter(Boolean));
+  document.getElementById('stat-visits')!.textContent = uniqueSids.size.toString();
+  document.getElementById('stat-unique')!.textContent = pageviews.length.toString(); // total page views
+  
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayViews = pageviews.filter((v: any) => v.timestamp.slice(0, 10) === todayStr);
+  document.getElementById('stat-today')!.textContent = todayViews.length.toString();
+  
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekAgoStr = weekAgo.toISOString().slice(0, 10);
+  const weekViews = pageviews.filter((v: any) => v.timestamp.slice(0, 10) >= weekAgoStr);
+  document.getElementById('stat-thisweek')!.textContent = weekViews.length.toString();
+
+  // Booking stats
+  document.getElementById('stat-total')!.textContent = appointments.length.toString();
+  document.getElementById('stat-pending')!.textContent = appointments.filter(a => a.status === 'pending').length.toString();
+  document.getElementById('stat-confirmed')!.textContent = appointments.filter(a => a.status === 'confirmed').length.toString();
+  document.getElementById('stat-rejected')!.textContent = appointments.filter(a => a.status === 'rejected').length.toString();
+
+  // Top pages
+  const pageCounts: Record<string, number> = {};
+  pageviews.forEach((v: any) => {
+    const page = v.path || '/';
+    pageCounts[page] = (pageCounts[page] || 0) + 1;
+  });
+  
+  const sortedPages = Object.entries(pageCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15);
+  
+  const pageListEl = document.getElementById('page-list')!;
+  if (sortedPages.length === 0) {
+    pageListEl.innerHTML = '<div class="empty-state">Keine Daten vorhanden.</div>';
+  } else {
+    pageListEl.innerHTML = sortedPages.map(([page, count]) => `
+      <div class="page-row">
+        <span class="page-path">${getPageName(page)}</span>
+        <span class="page-count">${count}</span>
+      </div>
+    `).join('');
+  }
+
+  // === DAILY LINE CHART BY MONTH ===
+  const monthLabel = document.getElementById('month-label')!;
+  const monthNames = ['', 'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+  monthLabel.textContent = `${monthNames[selectedMonth]} ${selectedYear}`;
+  
+  // Get days in month
+  const daysInMonth = [31,28,31,30,31,30,31,31,30,31,30,31][selectedMonth-1];
+  if (selectedYear % 4 === 0 && selectedMonth === 2) { daysInMonth = 29; }
+  
+  // Filter for selected month
+  const monthData: Record<string, number> = {};
+  pageviews.forEach((v: any) => {
+    const ts = v?.timestamp;
+    if (ts) {
+      const [yr, mn, dy] = ts.slice(0, 10).split('-').map(Number);
+      if (yr === selectedYear && mn === selectedMonth) {
+        const day = String(dy).padStart(2, '0');
+        monthData[day] = (monthData[day] || 0) + 1;
+      }
+    }
+  });
+  
+  const dailyChartEl = document.getElementById('daily-chart')!;
+  
+  // Build all 31 days x-axis
+  const allDays = Array.from({length: daysInMonth}, (_, i) => String(i + 1).padStart(2, '0'));
+  const hasData = allDays.some(d => monthData[d]);
+  
+  if (!hasData) {
+    dailyChartEl.innerHTML = '<div class="empty-state">Keine Daten für diesen Monat.</div>';
+  } else {
+    const maxM = Math.max(1, ...Object.values(monthData));
+    const cW = 700, cH = 180, pL = 45, pR = 15, pT = 15, pB = 25;
+    const gW = cW - pL - pR, gH = cH - pT - pB;
+    const step = gW / (daysInMonth - 1);
+    
+    // Line path connecting all days
+    let pathD = '';
+    let points = '';
+    let xLabs = '';
+    
+    allDays.forEach((d, i) => {
+      const dayNum = i + 1;
+      const val = monthData[d] || 0;
+      const x = pL + i * step;
+      const y = pT + gH - (val / maxM) * gH;
+      
+      if (i === 0) pathD = `M ${x} ${y}`;
+      else pathD += ` L ${x} ${y}`;
+      
+      if (val > 0) {
+        points += `<circle cx="${x}" cy="${y}" r="4" fill="#c89b4a"/>`;
+      }
+      
+      // X labels: 1, 5, 10, 15, 20, 25, last day
+      if (dayNum === 1 || dayNum % 5 === 0 || dayNum === daysInMonth) {
+        xLabs += `<text x="${x}" y="${cH - 5}" fill="#7b7669" font-size="9" text-anchor="middle">${dayNum}</text>`;
+      }
+    });
+    
+    // Y axis
+    let yLabs = '';
+    for (let i = 0; i <= 4; i++) {
+      const y = pT + (gH * i / 4);
+      const val = Math.round(maxM * (1 - i / 4));
+      yLabs += `<text x="${pL - 6}" y="${y + 3}" fill="#7b7669" font-size="9" text-anchor="end">${val}</text>`;
+    }
+    
+    dailyChartEl.innerHTML = `<svg viewBox="0 0 ${cW} ${cH}" style="width:100%;height:${cH}px;">` +
+      `<line x1="${pL}" y1="${pT}" x2="${pL}" y2="${pT + gH}" stroke="#1e1f2e"/>` +
+      `<line x1="${pL}" y1="${pT + gH}" x2="${pL + gW}" y2="${pT + gH}" stroke="#1e1f2e"/>` +
+      yLabs + xLabs +
+      `<path d="${pathD}" fill="none" stroke="#c89b4a" stroke-width="2"/>` +
+      points +
+      `</svg>`;
+  }
+  
+  // === MONTHLY OVERVIEW BY YEAR ===
+  document.getElementById('year-label')!.textContent = String(selectedYearChart);
+  
+  const shortMonthNames = ['', 'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+  
+  // Data per month for selected year
+  const monthCounts: Record<number, number> = {};
+  for (let m = 1; m <= 12; m++) { monthCounts[m] = 0; }
+  pageviews.forEach((v: any) => {
+    const ts = v?.timestamp;
+    if (ts) {
+      const [yr, mn] = ts.slice(0, 7).split('-').map(Number);
+      if (yr === selectedYearChart) { monthCounts[mn] = (monthCounts[mn] || 0) + 1; }
+    }
+  });
+  
+  const yearChartEl = document.getElementById('year-chart')!;
+  const hasMonthData = Object.values(monthCounts).some(v => v > 0);
+  
+  if (!hasMonthData) {
+    yearChartEl.innerHTML = '<div class="empty-state">Keine Daten für dieses Jahr.</div>';
+  } else {
+    const maxM = Math.max(1, ...Object.values(monthCounts));
+    const cW = 600, cH = 150, pL = 35, pR = 15, pT = 15, pB = 25;
+    const gW = cW - pL - pR, gH = cH - pT - pB;
+    const step = gW / 11;
+    
+    let pathD = '';
+    let pts = '';
+    let mtLabs = '';
+    
+    for (let m = 1; m <= 12; m++) {
+      const val = monthCounts[m];
+      const x = pL + (m - 1) * step;
+      const y = pT + gH - (val / maxM) * gH;
+      if (m === 1) pathD = `M ${x} ${y}`;
+      else pathD += ` L ${x} ${y}`;
+      if (val > 0) pts += `<circle cx="${x}" cy="${y}" r="4" fill="#c89b4a"/>`;
+      mtLabs += `<text x="${x}" y="${cH - 5}" fill="#7b7669" font-size="9" text-anchor="middle">${shortMonthNames[m]}</text>`;
+    }
+    
+    let yLabs = '';
+    for (let i = 0; i <= 4; i++) {
+      const y = pT + (gH * i / 4);
+      const val = Math.round(maxM * (1 - i / 4));
+      yLabs += `<text x="${pL - 4}" y="${y + 3}" fill="#7b7669" font-size="8" text-anchor="end">${val}</text>`;
+    }
+    
+    yearChartEl.innerHTML = `<svg viewBox="0 0 ${cW} ${cH}" style="width:100%;height:${cH}px;">` +
+      `<line x1="${pL}" y1="${pT}" x2="${pL}" y2="${pT + gH}" stroke="#1e1f2e"/>` +
+      `<line x1="${pL}" y1="${pT + gH}" x2="${pL + gW}" y2="${pT + gH}" stroke="#1e1f2e"/>` +
+      yLabs + mtLabs +
+      `<path d="${pathD}" fill="none" stroke="#c89b4a" stroke-width="2"/>` +
+      pts +
+      `</svg>`;
+  }
+}
+
+// Month navigation
+function setupMonthNav() {
+  document.getElementById('month-prev')!.addEventListener('click', () => {
+    selectedMonth--;
+    if (selectedMonth < 1) { selectedMonth = 12; selectedYear--; }
+    renderMetrics();
+  });
+  document.getElementById('month-next')!.addEventListener('click', () => {
+    selectedMonth++;
+    if (selectedMonth > 12) { selectedMonth = 1; selectedYear++; }
+    renderMetrics();
+  });
+  
+  // Year overview navigation
+  document.getElementById('year-prev')!.addEventListener('click', () => {
+    selectedYearChart--;
+    renderMetrics();
+  });
+  document.getElementById('year-next')!.addEventListener('click', () => {
+    selectedYearChart++;
+    renderMetrics();
+  });
+}
+
+// Auto-login check
+(async () => {
+  const savedPw = sessionStorage.getItem('admin_pw') || 'claritas2024';
+  const res = await fetch('/api/admin/slots', { headers: { 'x-admin-password': savedPw } });
+  if (res.ok) {
+    pw = savedPw;
+    sessionStorage.setItem('admin_pw', savedPw);
+    const data = await res.json();
+    appointments = data.appointments || [];
+    pageviews = data.pageviews || [];
+    console.log('LOADED - appointments:', appointments.length, 'pageviews:', pageviews.length);
+    loginScreen.style.display = 'none';
+    metricsShell.style.display = 'block';
+    setupMonthNav();
+    renderMetrics();
+  } else {
+    loginScreen.style.display = 'flex';
+  }
+})();
+</script>
+</Layout>

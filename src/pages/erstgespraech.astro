@@ -3,23 +3,23 @@ import Layout from '../layouts/Layout.astro';
 import BookingWidget from '../components/BookingWidget.astro';
 
 const agenda = [
-  'Fortschritte und offene Punkte',
-  'Überprüfung umgesetzter Maßnahmen',
-  'Neue Anforderungen und Prioritäten',
-  'Nächste Schritte festlegen',
+  'Ihr KI-Einsatz und Ihre Branche',
+  'Erste Einschätzung Ihrer Risikoklasse',
+  'Offene Fragen zu DSGVO / EU AI Act',
+  'Wie eine Zusammenarbeit aussehen könnte',
 ];
 ---
 
-<Layout title="Folgetermin buchen" ogTitle="Folgetermin buchen" description="Buchen Sie einen Folgetermin mit Martyna Kwiecien von Claritas AI Consulting — für bestehende Kunden.">
+<Layout title="Termin buchen" ogTitle="Erstgespräch vereinbaren" description="Buchen Sie ein kostenloses Erstgespräch mit Martyna Kwiecien von Claritas AI Consulting — 30 Minuten, unverbindlich.">
 
   <section class="page-hero">
     <div class="container">
-      <span class="section-label">Für bestehende Kunden</span>
+      <span class="section-label">Erstgespräch</span>
       <span class="gold-rule"></span>
-      <h1>Folgetermin<br /><em>buchen</em></h1>
+      <h1>Termin<br /><em>vereinbaren</em></h1>
       <p class="hero-sub">
-        Wählen Sie einen passenden Termin für unser nächstes Gespräch.
-        Bitte schildern Sie kurz, welche Themen wir besprechen sollen.
+        30 Minuten, kostenlos und unverbindlich. Wählen Sie einen
+        passenden Termin und wir besprechen Ihre Situation.
       </p>
     </div>
   </section>
@@ -29,14 +29,14 @@ const agenda = [
   <section class="section">
     <div class="container">
       <BookingWidget
-        type="folgetermin"
-        duration="60 Minuten"
-        cost="Nach Vereinbarung"
+        type="erstgespraech"
+        duration="30 Minuten"
+        cost="Kostenlos"
         agenda={agenda}
       />
 
-      <div class="back-hint">
-        Noch kein Kunde? <a href="/termin">Kostenloses Erstgespräch buchen →</a>
+      <div class="followup-hint">
+        Bereits Kunde? <a href="/termin">Folgetermin buchen →</a>
       </div>
     </div>
   </section>
@@ -65,19 +65,19 @@ const agenda = [
     line-height: 1.8;
   }
 
-  .back-hint {
+  .followup-hint {
     margin-top: 2.5rem;
     font-size: 0.85rem;
     color: var(--text-subtle);
   }
 
-  .back-hint a {
+  .followup-hint a {
     color: var(--gold);
     text-decoration: none;
     transition: opacity var(--transition);
   }
 
-  .back-hint a:hover { opacity: 0.8; }
+  .followup-hint a:hover { opacity: 0.8; }
 
   @media (max-width: 900px) {
     .page-hero { padding: 8rem 0 3rem; }

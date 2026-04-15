@@ -1,0 +1,5 @@
+2026-04-14T09:52:30Z [warn] Failed to load SCIP index | error=[INDEX_MISSING] SCIP index not found at index.scip: stat index.scip: no such file or directory path=index.scip
+2026-04-14T19:28:47Z [warn] Failed to load SCIP index | error=[INDEX_MISSING] SCIP index not found at index.scip: stat index.scip: no such file or directory path=index.scip
+2026-04-14T19:30:37Z [warn] Failed to load SCIP index | error=[INDEX_MISSING] SCIP index not found at index.scip: stat index.scip: no such file or directory path=index.scip
+2026-04-14T19:45:49Z [warn] Failed to load SCIP index | error=[INDEX_MISSING] SCIP index not found at index.scip: stat index.scip: no such file or directory path=index.scip
+2026-04-15T01:22:58Z [warn] Failed to load SCIP index | error=[INDEX_MISSING] SCIP index not found at index.scip: stat index.scip: no such file or directory path=index.scip

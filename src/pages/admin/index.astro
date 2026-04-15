@@ -2,152 +2,28 @@
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="Admin — Terminverwaltung">
-
-  <section class="admin-section">
-    <div class="container">
-
-      <!-- Login overlay -->
-      <div id="login-overlay" class="login-overlay">
-        <div class="login-box">
-          <div class="login-logo">
-            <span class="logo-mark">C</span>
-            <span>Admin</span>
-          </div>
-          <h2>Anmeldung</h2>
-          <div class="form-group">
-            <label for="admin-pw">Passwort</label>
-            <input type="password" id="admin-pw" placeholder="Passwort eingeben" />
-          </div>
-          <div id="login-error" class="msg-error" style="display:none;margin-top:0.75rem;"></div>
-          <button id="login-btn" class="btn btn-primary" style="margin-top:1rem;width:100%;justify-content:center;">
-            Anmelden
-          </button>
-        </div>
-      </div>
-
-      <!-- Admin UI -->
-      <div id="admin-ui" style="display:none;">
-        <div class="admin-header">
-          <h1>Terminverwaltung</h1>
-          <div class="admin-header-actions">
-            <span id="admin-status" class="admin-status"></span>
-            <button id="logout-btn" class="btn btn-outline" style="padding:0.5rem 1rem;font-size:0.75rem;">
-              Abmelden
-            </button>
-          </div>
-        </div>
-
-        <div class="admin-grid">
-
-          <!-- Weekly Schedule -->
-          <div class="admin-card">
-            <h3>Wochenplan</h3>
-            <p class="card-desc">Standard-Verfügbarkeit pro Wochentag</p>
-            <div id="weekly-schedule" class="weekly-schedule">
-              Wird geladen...
-            </div>
-          </div>
-
-          <!-- Date Overrides / Block -->
-          <div class="admin-card">
-            <h3>Tages-Ausnahmen</h3>
-            <p class="card-desc">Einzelne Tage sperren oder mit eigenen Zeiten versehen</p>
-
-            <div class="override-form">
-              <div class="form-group">
-                <label for="override-date">Datum</label>
-                <input type="date" id="override-date" />
-              </div>
-              <div class="form-group">
-                <label for="override-type">Aktion</label>
-                <select id="override-type">
-                  <option value="block">Tag sperren</option>
-                  <option value="unblock">Sperre aufheben</option>
-                  <option value="custom">Eigene Zeiten setzen</option>
-                </select>
-              </div>
-              <div id="custom-slots-input" style="display:none;">
-                <div class="form-group">
-                  <label>Zeitraum 1</label>
-                  <div class="time-range">
-                    <input type="time" id="ov-start1" value="08:00" />
-                    <span>bis</span>
-                    <input type="time" id="ov-end1" value="12:00" />
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label>Zeitraum 2 (optional)</label>
-                  <div class="time-range">
-                    <input type="time" id="ov-start2" value="14:00" />
-                    <span>bis</span>
-                    <input type="time" id="ov-end2" value="16:00" />
-                  </div>
-                </div>
-              </div>
-              <button id="apply-override" class="btn btn-primary" style="margin-top:0.5rem;">
-                Anwenden
-              </button>
-            </div>
-
-            <div id="overrides-list" class="overrides-list" style="margin-top:1.5rem;"></div>
-          </div>
-
-          <!-- Slot Duration -->
-          <div class="admin-card">
-            <h3>Terminlänge</h3>
-            <p class="card-desc">Dauer pro Gesprächstermin in Minuten</p>
-            <div class="duration-select">
-              <select id="duration-select">
-                <option value="30">30 Minuten</option>
-                <option value="45">45 Minuten</option>
-                <option value="60" selected>60 Minuten</option>
-                <option value="90">90 Minuten</option>
-              </select>
-              <button id="save-duration" class="btn btn-outline">Speichern</button>
-            </div>
-          </div>
-
-          <!-- Upcoming Appointments -->
-          <div class="admin-card appointments-card">
-            <h3>Bevorstehende Termine</h3>
-            <p class="card-desc">Alle bestätigten Buchungen</p>
-            <div id="appointments-list" class="appointments-list">
-              Wird geladen...
-            </div>
-          </div>
-
-        </div>
-
-        <div id="admin-feedback" style="margin-top:1rem;"></div>
-      </div>
-
-    </div>
-  </section>
-
-</Layout>
-
+<Layout title="Admin">
 <style>
-  .admin-section {
-    padding-top: 5rem;
+  .admin-wrap {
     min-height: 100vh;
+    padding-top: 72px;
+    background: var(--bg);
   }
 
-  /* Login */
-  .login-overlay {
+  /* ── Login ─────────────────────────────────── */
+  .login-screen {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 80vh;
+    min-height: calc(100vh - 72px);
   }
 
-  .login-box {
+  .login-card {
+    width: 360px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    padding: 3rem;
-    border-radius: 2px;
-    width: 100%;
-    max-width: 380px;
+    border-radius: 4px;
+    padding: 2.5rem;
   }
 
   .login-logo {
@@ -155,538 +31,1079 @@ import Layout from '../../layouts/Layout.astro';
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 2rem;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
   }
 
-  .login-logo .logo-mark {
-    width: 32px;
-    height: 32px;
+  .login-logo .mark {
+    width: 32px; height: 32px;
     border: 1px solid var(--gold);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-display);
-    font-size: 1.2rem;
-    color: var(--gold);
     border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 1.2rem; color: var(--gold);
   }
 
-  .login-box h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
+  .login-logo span {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
 
-  /* Admin UI */
-  .admin-header {
+  .login-card h2 { font-size: 1.4rem; margin-bottom: 1.5rem; }
+
+  /* ── Shell ─────────────────────────────────── */
+  .admin-shell { display: none; }
+
+  .admin-topbar {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    padding: 0 2rem;
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 2rem 0 1.5rem;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 2rem;
+    position: sticky;
+    top: 72px;
+    z-index: 10;
   }
 
-  .admin-header h1 { font-size: 2rem; }
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
 
-  .admin-header-actions {
+  .topbar-left span { color: var(--gold); }
+
+  .topbar-left a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 200ms;
+  }
+
+  .topbar-left a:hover,
+  .topbar-left a.active {
+    color: var(--gold);
+  }
+
+  .topbar-right {
     display: flex;
     align-items: center;
     gap: 1rem;
   }
 
-  .admin-status {
+  .save-indicator {
     font-size: 0.75rem;
     color: var(--text-subtle);
+    transition: color 300ms;
   }
 
-  .admin-grid {
+  .save-indicator.saved { color: #6fcf97; }
+  .save-indicator.error { color: #eb5757; }
+
+  .logout-btn {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.4rem 0.9rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 200ms;
+  }
+  .logout-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── Layout ────────────────────────────────── */
+  .admin-body {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: 1fr 380px;
+    gap: 2rem;
+    align-items: start;
   }
 
-  .admin-card {
+  .admin-col { display: flex; flex-direction: column; gap: 2rem; }
+
+  /* ── Panel ─────────────────────────────────── */
+  .panel {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    padding: 2rem;
-    border-radius: 2px;
+    border-radius: 4px;
+    overflow: hidden;
   }
 
-  .admin-card h3 {
-    font-size: 1.1rem;
-    margin-bottom: 0.4rem;
-  }
-
-  .card-desc {
-    font-size: 0.8rem;
-    color: var(--text-subtle);
-    margin-bottom: 1.5rem;
-  }
-
-  .appointments-card {
-    grid-column: 1 / -1;
-  }
-
-  /* Weekly schedule */
-  .weekly-schedule {
+  .panel-head {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
     display: flex;
-    flex-direction: column;
-    gap: 0;
+    align-items: center;
+    justify-content: space-between;
   }
+
+  .panel-head h3 {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .panel-head .hint {
+    font-size: 0.72rem;
+    color: var(--text-subtle);
+  }
+
+  .panel-body { padding: 1.5rem; }
+
+  /* ── Day rows ──────────────────────────────── */
+  .day-list { display: flex; flex-direction: column; gap: 0; }
 
   .day-row {
     display: grid;
-    grid-template-columns: 80px 1fr auto;
+    grid-template-columns: 110px 1fr auto;
     align-items: center;
     gap: 1rem;
-    padding: 0.75rem 0;
+    padding: 1rem 0;
     border-bottom: 1px solid var(--border);
   }
 
   .day-row:last-child { border-bottom: none; }
+  .day-row.off .time-slots { opacity: 0.3; pointer-events: none; }
 
-  .day-name {
-    font-size: 0.8rem;
+  .day-label {
+    font-size: 0.85rem;
     font-weight: 500;
     color: var(--text);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
   }
 
-  .day-times {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-  }
-
-  .day-toggle {
-    position: relative;
-    width: 40px;
-    height: 22px;
-    flex-shrink: 0;
-  }
-
-  .day-toggle input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .toggle-slider {
-    position: absolute;
-    inset: 0;
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: 11px;
-    cursor: pointer;
-    transition: all var(--transition);
-  }
-
-  .toggle-slider::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    top: 2px;
-    left: 2px;
-    background: var(--text-subtle);
-    border-radius: 50%;
-    transition: all var(--transition);
-  }
-
-  input:checked + .toggle-slider {
-    background: var(--gold-dim);
-    border-color: var(--gold);
-  }
-
-  input:checked + .toggle-slider::after {
-    transform: translateX(18px);
-    background: var(--gold);
-  }
-
-  /* Override form */
-  .override-form {
+  /* time slots inline */
+  .time-slots {
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .time-range {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .time-range span {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-  }
-
-  .time-range input {
-    flex: 1;
-  }
-
-  /* Overrides list */
-  .overrides-list {
-    display: flex;
-    flex-direction: column;
     gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    transition: opacity 200ms;
   }
 
-  .override-item {
+  .time-pill {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0.6rem 0.75rem;
+    gap: 0.35rem;
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: 2px;
-    font-size: 0.8rem;
+    border-radius: 3px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
   }
 
-  .override-item .override-date { color: var(--text); font-weight: 500; }
-  .override-item .override-type { color: var(--text-muted); }
+  .time-pill input[type="time"] {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    padding: 0;
+    outline: none;
+    width: 70px;
+    cursor: pointer;
+    -webkit-appearance: none;
+  }
 
-  .remove-override {
+  .time-pill .sep {
+    color: var(--text-subtle);
+    font-size: 0.7rem;
+  }
+
+  .add-range-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: 3px;
+    color: var(--text-subtle);
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 200ms;
+  }
+  .add-range-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .remove-range-btn {
     background: none;
     border: none;
     color: var(--text-subtle);
     cursor: pointer;
     font-size: 1rem;
-    padding: 0;
-    transition: color var(--transition);
+    padding: 0 0.15rem;
+    line-height: 1;
+    transition: color 200ms;
   }
-  .remove-override:hover { color: #eb5757; }
+  .remove-range-btn:hover { color: #eb5757; }
 
-  /* Duration */
-  .duration-select {
+  /* toggle */
+  .toggle-wrap { flex-shrink: 0; }
+
+  .toggle {
+    position: relative;
+    width: 40px; height: 22px;
+    display: inline-block;
+  }
+
+  .toggle input { display: none; }
+
+  .toggle-track {
+    position: absolute; inset: 0;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    cursor: pointer;
+    transition: all 200ms;
+  }
+
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    top: 2px; left: 2px;
+    background: var(--text-subtle);
+    border-radius: 50%;
+    transition: all 200ms;
+  }
+
+  .toggle input:checked + .toggle-track {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+  }
+
+  .toggle input:checked + .toggle-track::after {
+    transform: translateX(18px);
+    background: var(--gold);
+  }
+
+  /* ── Slot duration ─────────────────────────── */
+  .duration-row {
     display: flex;
-    gap: 0.75rem;
     align-items: center;
-  }
-
-  /* Appointments */
-  .appointments-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .appointment-row {
-    display: grid;
-    grid-template-columns: 160px 1fr 1fr auto;
     gap: 1rem;
-    align-items: center;
     padding: 1rem 0;
-    border-bottom: 1px solid var(--border);
+  }
+
+  .duration-label {
     font-size: 0.85rem;
+    color: var(--text);
+    flex: 1;
   }
 
-  .appointment-row:first-child { border-top: 1px solid var(--border); }
+  .duration-btns {
+    display: flex;
+    gap: 0.4rem;
+  }
 
-  .appt-datetime {
-    color: var(--gold);
-    font-weight: 500;
+  .dur-btn {
+    padding: 0.4rem 0.9rem;
     font-size: 0.8rem;
+    font-family: var(--font-body);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 200ms;
   }
 
-  .appt-name { color: var(--text); }
+  .dur-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .dur-btn.active { background: var(--gold); border-color: var(--gold); color: var(--bg); font-weight: 500; }
 
-  .appt-email { color: var(--text-muted); }
-
-  .appt-status {
-    font-size: 0.65rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 1px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  /* ── Mini calendar ─────────────────────────── */
+  .mini-cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
   }
 
-  .status-confirmed {
-    background: #0f2018;
-    border: 1px solid #2a5a3a;
-    color: #6fcf97;
-  }
-
-  .status-cancelled {
-    background: #200f0f;
-    border: 1px solid #5a2a2a;
-    color: #eb5757;
-  }
-
-  .cancel-appt {
+  .mini-cal-nav {
     background: none;
     border: 1px solid var(--border);
     color: var(--text-muted);
-    font-size: 0.72rem;
-    padding: 0.3rem 0.6rem;
+    width: 28px; height: 28px;
+    border-radius: 3px;
     cursor: pointer;
-    border-radius: 2px;
-    font-family: var(--font-body);
-    transition: all var(--transition);
+    font-size: 0.9rem;
+    transition: all 200ms;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mini-cal-nav:hover { border-color: var(--gold); color: var(--gold); }
+
+  .mini-cal-label {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text);
   }
 
-  .cancel-appt:hover { border-color: #eb5757; color: #eb5757; }
+  .mini-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+
+  .mini-wd {
+    text-align: center;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    padding-bottom: 0.4rem;
+  }
+
+  .mini-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    border-radius: 3px;
+    cursor: pointer;
+    color: var(--text-muted);
+    border: 1px solid transparent;
+    transition: all 150ms;
+    position: relative;
+  }
+
+  .mini-day.past { color: var(--text-subtle); cursor: default; opacity: 0.4; }
+  .mini-day.blocked { background: #200f0f; border-color: #5a2a2a; color: #eb5757 !important; }
+  .mini-day.has-appt { color: var(--gold); }
+  .mini-day.has-appt::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    width: 4px; height: 4px;
+    background: var(--gold);
+    border-radius: 50%;
+  }
+  .mini-day:not(.past):not(.blocked):hover { background: var(--bg-surface); border-color: var(--border); }
+  .mini-day.blocked:hover { background: #2a1010; }
+  .mini-day.empty { cursor: default; }
+
+  .cal-legend {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: var(--text-subtle);
+  }
+
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+  }
+
+  .legend-dot.blocked { background: #eb5757; }
+  .legend-dot.appt { background: var(--gold); }
+
+  /* ── Appointments ──────────────────────────── */
+  .appt-list { display: flex; flex-direction: column; gap: 0; }
+
+  .appt-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 0.75rem;
+  }
+
+  .appt-item:last-child { border-bottom: none; }
+
+  .appt-datetime {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.25rem;
+  }
+
+  .appt-name {
+    font-size: 0.88rem;
+    color: var(--text);
+    margin-bottom: 0.15rem;
+  }
+
+  .appt-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .appt-topic {
+    font-size: 0.75rem;
+    color: var(--text-subtle);
+    margin-top: 0.25rem;
+    font-style: italic;
+  }
+
+  .cancel-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-subtle);
+    font-size: 0.68rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 200ms;
+    white-space: nowrap;
+  }
+
+  .cancel-btn:hover { border-color: #eb5757; color: #eb5757; }
+
+  .badge-cancelled, .badge-rejected {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+  }
+
+  .badge-pending {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #f2c94c;
+    border: 1px solid #f2c94c;
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+  }
+
+  .badge-confirmed {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6fcf97;
+    border: 1px solid #6fcf97;
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+  }
+
+  .badge-rejected {
+    color: #eb5757;
+    border-color: #eb5757;
+  }
+
+  .badge-cancelled {
+    color: var(--text-subtle);
+  }
+
+  .appt-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+
+  .appt-action-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.64rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 200ms;
+  }
+
+  .appt-action-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .appt-action-btn.reject:hover {
+    border-color: #eb5757;
+    color: #eb5757;
+  }
+
+  .appt-action-btn.reschedule:hover {
+    border-color: #f2c94c;
+    color: #f2c94c;
+  }
 
   .no-appts {
-    font-size: 0.85rem;
-    color: var(--text-subtle);
-    padding: 1.5rem 0;
+    padding: 2rem 0;
     text-align: center;
-    border: 1px dashed var(--border);
-    border-radius: 2px;
+    font-size: 0.82rem;
+    color: var(--text-subtle);
   }
 
+  .appt-filter {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .filter-btn {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.3rem 0.75rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 200ms;
+  }
+
+  .filter-btn.active { border-color: var(--gold); color: var(--gold); }
+
   @media (max-width: 900px) {
-    .admin-grid { grid-template-columns: 1fr; }
-    .appointments-card { grid-column: 1; }
-    .appointment-row { grid-template-columns: 1fr 1fr; }
+    .admin-body { grid-template-columns: 1fr; }
   }
 </style>
 
+<div class="admin-wrap">
+
+  <!-- Login -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="mark">C</div>
+        <span>Admin · Claritas</span>
+      </div>
+      <h2>Anmeldung</h2>
+      <div class="form-group">
+        <label for="pw">Passwort</label>
+        <input type="password" id="pw" autocomplete="current-password" />
+      </div>
+      <p id="login-err" style="display:none;margin-top:0.5rem;font-size:0.82rem;color:#eb5757;"></p>
+      <button id="login-btn" class="btn btn-primary" style="margin-top:1.25rem;width:100%;justify-content:center;">
+        Anmelden
+      </button>
+    </div>
+  </div>
+
+  <!-- Admin shell -->
+  <div class="admin-shell" id="admin-shell">
+    <div class="admin-topbar">
+      <div class="topbar-left">
+        <span>Claritas</span> ·
+        <a href="/admin">Termine</a> ·
+        <a href="/admin/metrics">Metrics</a>
+      </div>
+      <div class="topbar-right">
+        <span class="save-indicator" id="save-indicator"></span>
+        <button class="logout-btn" id="logout-btn">Abmelden</button>
+      </div>
+    </div>
+
+    <div class="admin-body">
+
+      <!-- LEFT COLUMN -->
+      <div class="admin-col">
+
+        <!-- Weekly schedule -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Wochenplan</h3>
+            <span class="hint">Klick auf die Zeiten zum Bearbeiten</span>
+          </div>
+          <div class="panel-body">
+            <div class="day-list" id="day-list"></div>
+          </div>
+        </div>
+
+        <!-- Slot duration -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Terminlänge</h3>
+          </div>
+          <div class="panel-body">
+            <div class="duration-row">
+              <span class="duration-label">Dauer pro Gesprächstermin</span>
+              <div class="duration-btns" id="dur-btns">
+                <button class="dur-btn" data-min="30">30 min</button>
+                <button class="dur-btn" data-min="45">45 min</button>
+                <button class="dur-btn" data-min="60">60 min</button>
+                <button class="dur-btn" data-min="90">90 min</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="admin-col">
+
+        <!-- Calendar (block dates) -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Kalender</h3>
+            <span class="hint">Klick = Tag sperren / entsperren</span>
+          </div>
+          <div class="panel-body">
+            <div class="mini-cal-header">
+              <button class="mini-cal-nav" id="cal-prev">‹</button>
+              <span class="mini-cal-label" id="cal-label"></span>
+              <button class="mini-cal-nav" id="cal-next">›</button>
+            </div>
+            <div class="mini-cal-grid" id="mini-cal"></div>
+            <div class="cal-legend">
+              <div class="legend-item">
+                <div class="legend-dot blocked"></div>
+                <span>Gesperrt</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot appt"></div>
+                <span>Termin vorhanden</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming appointments -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Termine</h3>
+          </div>
+          <div class="appt-filter">
+            <button class="filter-btn active" data-filter="upcoming">Bevorstehend</button>
+            <button class="filter-btn" data-filter="all">Alle</button>
+          </div>
+          <div class="panel-body" style="padding-top:0;">
+            <div class="appt-list" id="appt-list"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+</Layout>
+
 <script>
-  const DAY_NAMES: Record<string, string> = {
-    '1': 'Montag', '2': 'Dienstag', '3': 'Mittwoch',
-    '4': 'Donnerstag', '5': 'Freitag', '6': 'Samstag', '0': 'Sonntag'
-  };
+const DAY_NAMES: Record<string, string> = {
+  '1':'Montag','2':'Dienstag','3':'Mittwoch',
+  '4':'Donnerstag','5':'Freitag','6':'Samstag','0':'Sonntag'
+};
+const MONTHS = ['Januar','Februar','März','April','Mai','Juni',
+                'Juli','August','September','Oktober','November','Dezember'];
 
-  let adminPassword = '';
-  let configData: any = null;
-  let appointmentsData: any[] = [];
+let pw = '';
+let cfg: any = null;
+let appts: any[] = [];
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let apptFilter: 'upcoming' | 'all' = 'upcoming';
 
-  // ── Auth ──────────────────────────────────────────────────────────────────
-  document.getElementById('login-btn')!.addEventListener('click', tryLogin);
-  document.getElementById('admin-pw')!.addEventListener('keydown', (e: Event) => {
-    if ((e as KeyboardEvent).key === 'Enter') tryLogin();
-  });
+// ── Auth ────────────────────────────────────────────────────────────
+const loginScreen = document.getElementById('login-screen')!;
+const adminShell  = document.getElementById('admin-shell')!;
+const loginErr    = document.getElementById('login-err')!;
 
-  async function tryLogin() {
-    const pw = (document.getElementById('admin-pw') as HTMLInputElement).value;
-    const errEl = document.getElementById('login-error')!;
-    errEl.style.display = 'none';
-
-    const res = await fetch('/api/admin/slots', {
-      headers: { 'x-admin-password': pw }
-    });
-
-    if (res.ok) {
-      adminPassword = pw;
-      const data = await res.json();
-      configData = data.config;
-      appointmentsData = data.appointments;
-      document.getElementById('login-overlay')!.style.display = 'none';
-      document.getElementById('admin-ui')!.style.display = 'block';
-      renderAll();
-    } else {
-      errEl.textContent = 'Falsches Passwort.';
-      errEl.style.display = 'block';
-    }
-  }
-
-  document.getElementById('logout-btn')!.addEventListener('click', () => {
-    adminPassword = '';
-    document.getElementById('admin-ui')!.style.display = 'none';
-    document.getElementById('login-overlay')!.style.display = 'flex';
-    (document.getElementById('admin-pw') as HTMLInputElement).value = '';
-  });
-
-  // ── API Helper ───────────────────────────────────────────────────────────
-  async function apiPost(action: string, payload: object) {
-    const res = await fetch('/api/admin/slots', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-password': adminPassword,
-      },
-      body: JSON.stringify({ action, payload }),
-    });
+async function tryLogin() {
+  const val = (document.getElementById('pw') as HTMLInputElement).value;
+  const res = await fetch('/api/admin/slots', { headers: { 'x-admin-password': val } });
+  if (res.ok) {
+    pw = val;
+    sessionStorage.setItem('admin_pw', val);
     const data = await res.json();
-    if (res.ok) {
-      if (data.config) configData = data.config;
-      showFeedback('Gespeichert ✓', 'success');
-    } else {
-      showFeedback(data.error || 'Fehler', 'error');
-    }
-    return data;
+    cfg = data.config; appts = data.appointments;
+    loginScreen.style.display = 'none';
+    adminShell.style.display = 'block';
+    renderAll();
+  } else {
+    loginErr.textContent = 'Falsches Passwort.';
+    loginErr.style.display = 'block';
   }
+}
 
-  function showFeedback(msg: string, type: 'success' | 'error') {
-    const el = document.getElementById('admin-feedback')!;
-    el.innerHTML = `<div class="msg-${type}">${msg}</div>`;
-    setTimeout(() => { el.innerHTML = ''; }, 3000);
-  }
+document.getElementById('login-btn')!.addEventListener('click', tryLogin);
+(document.getElementById('pw') as HTMLInputElement).addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') tryLogin();
+});
 
-  // ── Render ───────────────────────────────────────────────────────────────
-  function renderAll() {
-    renderWeeklySchedule();
-    renderOverridesList();
-    renderAppointments();
-    (document.getElementById('duration-select') as HTMLSelectElement).value =
-      String(configData.slotDurationMinutes || 60);
-  }
+document.getElementById('logout-btn')!.addEventListener('click', () => {
+  pw = ''; 
+  sessionStorage.removeItem('admin_pw');
+  adminShell.style.display = 'none';
+  loginScreen.style.display = 'flex';
+  (document.getElementById('pw') as HTMLInputElement).value = '';
+});
 
-  function renderWeeklySchedule() {
-    const el = document.getElementById('weekly-schedule')!;
-    const days = ['1','2','3','4','5','6','0'];
+// ── API ─────────────────────────────────────────────────────────────
+async function api(action: string, payload: object) {
+  const res = await fetch('/api/admin/slots', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
+    body: JSON.stringify({ action, payload }),
+  });
+  const data = await res.json();
+  if (res.ok && data.config) cfg = data.config;
+  showSave(res.ok);
+  return data;
+}
 
-    el.innerHTML = days.map(day => {
-      const sch = configData.weeklySchedule[day] || { enabled: false, slots: [] };
-      const times = sch.slots.map((s: any) => `${s.start}–${s.end}`).join(', ') || '—';
-      return `
-        <div class="day-row" data-day="${day}">
-          <span class="day-name">${DAY_NAMES[day]}</span>
-          <span class="day-times">${times}</span>
-          <label class="day-toggle">
-            <input type="checkbox" ${sch.enabled ? 'checked' : ''} data-day="${day}" class="day-toggle-input" />
-            <span class="toggle-slider"></span>
+function showSave(ok: boolean) {
+  const el = document.getElementById('save-indicator')!;
+  el.textContent = ok ? 'Gespeichert ✓' : 'Fehler beim Speichern';
+  el.className = 'save-indicator ' + (ok ? 'saved' : 'error');
+  setTimeout(() => { el.textContent = ''; el.className = 'save-indicator'; }, 2500);
+}
+
+// ── Render all ──────────────────────────────────────────────────────
+function renderAll() {
+  renderDayList();
+  renderDuration();
+  renderMiniCal();
+  renderAppts();
+}
+
+// ── Day list ────────────────────────────────────────────────────────
+function renderDayList() {
+  const el = document.getElementById('day-list')!;
+  const days = ['1','2','3','4','5','6','0'];
+
+  el.innerHTML = days.map(day => {
+    const sch = cfg.weeklySchedule[day] || { enabled: false, slots: [] };
+    const slots: {start:string;end:string}[] = sch.slots;
+
+    const pillsHtml = slots.map((s, i) => `
+      <div class="time-pill" data-day="${day}" data-idx="${i}">
+        <input type="time" class="slot-start" value="${s.start}" data-day="${day}" data-idx="${i}" />
+        <span class="sep">–</span>
+        <input type="time" class="slot-end" value="${s.end}" data-day="${day}" data-idx="${i}" />
+        <button class="remove-range-btn" data-day="${day}" data-idx="${i}" title="Entfernen">×</button>
+      </div>
+    `).join('');
+
+    return `
+      <div class="day-row ${sch.enabled ? '' : 'off'}" data-day="${day}">
+        <span class="day-label">${DAY_NAMES[day]}</span>
+        <div class="time-slots">
+          ${pillsHtml}
+          ${sch.enabled ? `<button class="add-range-btn" data-day="${day}">+ Zeitraum</button>` : ''}
+        </div>
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" class="day-toggle" data-day="${day}" ${sch.enabled ? 'checked' : ''} />
+            <span class="toggle-track"></span>
           </label>
         </div>
-      `;
-    }).join('');
-
-    el.querySelectorAll('.day-toggle-input').forEach(inp => {
-      inp.addEventListener('change', async (e) => {
-        const target = e.target as HTMLInputElement;
-        const day = target.dataset.day!;
-        const enabled = target.checked;
-        const currentSlots = configData.weeklySchedule[day]?.slots || [
-          { start: '08:00', end: '12:00' },
-          { start: '14:00', end: '16:00' }
-        ];
-        await apiPost('updateWeekly', { day, enabled, slots: currentSlots });
-        renderWeeklySchedule();
-      });
-    });
-  }
-
-  function renderOverridesList() {
-    const el = document.getElementById('overrides-list')!;
-    const overrides = configData.overrides || {};
-    const blocked = configData.blockedDates || [];
-
-    const allItems: { date: string; type: string }[] = [];
-
-    blocked.forEach((d: string) => allItems.push({ date: d, type: 'Gesperrt' }));
-    Object.entries(overrides).forEach(([date, val]) => {
-      if (val === false) {
-        if (!allItems.find(i => i.date === date)) allItems.push({ date, type: 'Gesperrt (Override)' });
-      } else {
-        allItems.push({ date, type: 'Eigene Zeiten' });
-      }
-    });
-
-    allItems.sort((a, b) => a.date.localeCompare(b.date));
-
-    if (allItems.length === 0) {
-      el.innerHTML = '<p style="font-size:0.8rem;color:var(--text-subtle);">Keine Ausnahmen vorhanden.</p>';
-      return;
-    }
-
-    el.innerHTML = allItems.map(item => `
-      <div class="override-item">
-        <span class="override-date">${item.date}</span>
-        <span class="override-type">${item.type}</span>
-        <button class="remove-override" data-date="${item.date}" data-type="${item.type}" title="Entfernen">×</button>
       </div>
-    `).join('');
+    `;
+  }).join('');
 
-    el.querySelectorAll('.remove-override').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const date = (btn as HTMLElement).dataset.date!;
-        const type = (btn as HTMLElement).dataset.type!;
-        if (type === 'Gesperrt') {
-          await apiPost('unblockDate', { date });
-        } else {
-          await apiPost('removeOverride', { date });
-        }
-        renderOverridesList();
-      });
+  // Toggles
+  el.querySelectorAll('.day-toggle').forEach(inp => {
+    inp.addEventListener('change', async (e) => {
+      const t = e.target as HTMLInputElement;
+      const day = t.dataset.day!;
+      const enabled = t.checked;
+      const current = cfg.weeklySchedule[day]?.slots || [{start:'08:00',end:'12:00'},{start:'14:00',end:'16:00'}];
+      await api('updateWeekly', { day, enabled, slots: current });
+      renderDayList();
     });
+  });
+
+  // Time input blur — save on change
+  el.querySelectorAll('.slot-start, .slot-end').forEach(inp => {
+    inp.addEventListener('change', async (e) => {
+      const t = e.target as HTMLInputElement;
+      const day = t.dataset.day!;
+      const idx = parseInt(t.dataset.idx!);
+      const isStart = t.classList.contains('slot-start');
+      const slots = [...(cfg.weeklySchedule[day]?.slots || [])];
+      if (!slots[idx]) return;
+      slots[idx] = { ...slots[idx], [isStart ? 'start' : 'end']: t.value };
+      await api('updateWeekly', { day, enabled: cfg.weeklySchedule[day]?.enabled ?? true, slots });
+    });
+  });
+
+  // Remove range
+  el.querySelectorAll('.remove-range-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const b = e.currentTarget as HTMLElement;
+      const day = b.dataset.day!;
+      const idx = parseInt(b.dataset.idx!);
+      const slots = [...(cfg.weeklySchedule[day]?.slots || [])];
+      slots.splice(idx, 1);
+      await api('updateWeekly', { day, enabled: cfg.weeklySchedule[day]?.enabled ?? true, slots });
+      renderDayList();
+    });
+  });
+
+  // Add range
+  el.querySelectorAll('.add-range-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const day = (e.currentTarget as HTMLElement).dataset.day!;
+      const slots = [...(cfg.weeklySchedule[day]?.slots || [])];
+      slots.push({ start: '09:00', end: '11:00' });
+      await api('updateWeekly', { day, enabled: true, slots });
+      renderDayList();
+    });
+  });
+}
+
+// ── Duration ────────────────────────────────────────────────────────
+function renderDuration() {
+  document.querySelectorAll('.dur-btn').forEach(btn => {
+    const min = parseInt((btn as HTMLElement).dataset.min!);
+    btn.classList.toggle('active', min === cfg.slotDurationMinutes);
+    btn.addEventListener('click', async () => {
+      await api('setDuration', { minutes: min });
+      renderDuration();
+    });
+  });
+}
+
+// ── Mini calendar ───────────────────────────────────────────────────
+function renderMiniCal() {
+  document.getElementById('cal-label')!.textContent = `${MONTHS[calMonth]} ${calYear}`;
+  const grid = document.getElementById('mini-cal')!;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const blocked: string[] = cfg.blockedDates || [];
+  const apptDates = new Set(appts.filter(a => a.status !== 'cancelled').map((a: any) => a.date));
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay  = new Date(calYear, calMonth + 1, 0);
+  let offset = firstDay.getDay() - 1;
+  if (offset < 0) offset = 6;
+
+  const wds = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+  let html = wds.map(d => `<div class="mini-wd">${d}</div>`).join('');
+  for (let i = 0; i < offset; i++) html += `<div class="mini-day empty"></div>`;
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dt = new Date(calYear, calMonth, d);
+    const isPast = dt < today;
+    let cls = 'mini-day';
+    if (isPast) cls += ' past';
+    else if (blocked.includes(ds)) cls += ' blocked';
+    if (apptDates.has(ds)) cls += ' has-appt';
+    html += `<div class="${cls}" data-date="${ds}" title="${blocked.includes(ds) ? 'Gesperrt — klicken zum Entsperren' : 'Klicken zum Sperren'}">${d}</div>`;
   }
 
-  function renderAppointments() {
-    const el = document.getElementById('appointments-list')!;
-    const upcoming = appointmentsData
-      .filter(a => a.date >= new Date().toISOString().slice(0, 10))
-      .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`));
+  grid.innerHTML = html;
 
-    if (upcoming.length === 0) {
-      el.innerHTML = '<div class="no-appts">Keine bevorstehenden Termine.</div>';
-      return;
+  grid.querySelectorAll('.mini-day:not(.past):not(.empty)').forEach(cell => {
+    cell.addEventListener('click', async (e) => {
+      const date = (e.currentTarget as HTMLElement).dataset.date!;
+      if (blocked.includes(date)) {
+        await api('unblockDate', { date });
+      } else {
+        await api('blockDate', { date });
+      }
+      renderMiniCal();
+    });
+  });
+}
+
+document.getElementById('cal-prev')!.addEventListener('click', () => {
+  if (calMonth === 0) { calMonth = 11; calYear--; } else calMonth--;
+  renderMiniCal();
+});
+
+document.getElementById('cal-next')!.addEventListener('click', () => {
+  if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++;
+  renderMiniCal();
+});
+
+// ── Appointments ────────────────────────────────────────────────────
+function renderAppts() {
+  const el = document.getElementById('appt-list')!;
+  const todayStr = new Date().toISOString().slice(0,10);
+
+  let list = [...appts].sort((a, b) =>
+    `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)
+  );
+
+  if (apptFilter === 'upcoming') {
+    list = list.filter(a => a.date >= todayStr && a.status !== 'cancelled' && a.status !== 'rejected');
+  }
+
+  if (list.length === 0) {
+    el.innerHTML = '<div class="no-appts">Keine Termine vorhanden.</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(a => {
+    const statusBadge = a.status === 'pending' ? '<span class="badge-pending">Offen</span>' 
+      : a.status === 'confirmed' ? '<span class="badge-confirmed">Bestätigt</span>'
+      : a.status === 'rejected' ? '<span class="badge-rejected">Abgelehnt</span>'
+      : '<span class="badge-cancelled">Abgesagt</span>';
+
+    let actions = '';
+    if (a.status === 'pending') {
+      actions = `
+        <button class="appt-action-btn" data-action="confirm" data-id="${a.id}">Bestätigen</button>
+        <button class="appt-action-btn reject" data-action="reject" data-id="${a.id}">Ablehnen</button>
+        <button class="appt-action-btn reschedule" data-action="reschedule" data-id="${a.id}">Verschieben</button>
+        <button class="appt-action-btn" data-action="message" data-id="${a.id}">Nachricht</button>
+      `;
+    } else if (a.status === 'confirmed') {
+      actions = `
+        <button class="appt-action-btn" data-action="reschedule" data-id="${a.id}">Verschieben</button>
+        <button class="appt-action-btn" data-action="message" data-id="${a.id}">Nachricht</button>
+        <button class="appt-action-btn reject" data-action="cancel" data-id="${a.id}">Absagen</button>
+      `;
+    } else if (a.status === 'rejected') {
+      actions = `
+        <button class="appt-action-btn" data-action="confirm" data-id="${a.id}">Erneut einladen</button>
+        <button class="appt-action-btn" data-action="message" data-id="${a.id}">Nachricht</button>
+      `;
     }
 
-    el.innerHTML = upcoming.map(a => `
-      <div class="appointment-row" data-id="${a.id}">
-        <span class="appt-datetime">${a.date} · ${a.time} Uhr</span>
-        <span class="appt-name">${escHtml(a.name)}</span>
-        <span class="appt-email">${escHtml(a.email)}</span>
-        <div style="display:flex;align-items:center;gap:0.5rem;">
-          <span class="appt-status status-${a.status}">${a.status === 'confirmed' ? 'Bestätigt' : 'Abgesagt'}</span>
-          ${a.status === 'confirmed' ? `<button class="cancel-appt" data-id="${a.id}">Absagen</button>` : ''}
+    return `
+      <div class="appt-item">
+        <div>
+          <div class="appt-datetime">${formatDate(a.date)} · ${a.time} Uhr</div>
+          <div class="appt-name">${esc(a.name)}${a.company ? ` · <span style="color:var(--text-muted);font-size:0.82rem;">${esc(a.company)}</span>` : ''}</div>
+          <div class="appt-meta">${esc(a.email)}</div>
+          ${a.topic ? `<div class="appt-topic">${esc(a.topic)}</div>` : ''}
+        </div>
+        <div>
+          ${statusBadge}
+          <div class="appt-actions">
+            ${actions}
+          </div>
         </div>
       </div>
-    `).join('');
+    `;
+  }).join('');
 
-    el.querySelectorAll('.cancel-appt').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = (btn as HTMLElement).dataset.id!;
+  el.querySelectorAll('.appt-action-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const action = (e.currentTarget as HTMLElement).dataset.action!;
+      const id = (e.currentTarget as HTMLElement).dataset.id!;
+      const appt = appts.find(x => x.id === id);
+      if (!appt) return;
+
+      if (action === 'cancel') {
         if (!confirm('Termin wirklich absagen?')) return;
+      }
+
+      if (action === 'reschedule') {
+        const newDate = prompt('Neues Datum (YYYY-MM-DD):', appt.date);
+        if (!newDate) return;
+        const newTime = prompt('Neue Uhrzeit (HH:MM):', appt.time);
+        if (!newTime) return;
         const res = await fetch('/api/admin/slots', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
-          body: JSON.stringify({ action: 'cancelAppointment', payload: { id } }),
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
+          body: JSON.stringify({ action: 'rescheduleAppointment', payload: { id, date: newDate, time: newTime } }),
         });
         if (res.ok) {
-          const appt = appointmentsData.find(a => a.id === id);
-          if (appt) appt.status = 'cancelled';
-          renderAppointments();
-          showFeedback('Termin abgesagt.', 'success');
+          const data = await res.json();
+          Object.assign(appt, data.appointment);
+          renderAppts();
+          renderMiniCal();
+          showSave(true);
         }
+        return;
+      }
+
+      if (action === 'message') {
+        const msg = prompt('Nachricht an Kunde:');
+        if (!msg) return;
+        const res = await fetch('/api/admin/slots', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
+          body: JSON.stringify({ action: 'sendMessageToCustomer', payload: { id, message: msg } }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          appt.adminMessage = data.appointment.adminMessage;
+          showSave(true);
+        }
+        return;
+      }
+
+      const actionMap: Record<string, string> = {
+        confirm: 'confirmAppointment',
+        reject: 'rejectAppointment',
+        cancel: 'cancelAppointment',
+      };
+
+      const res = await fetch('/api/admin/slots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
+        body: JSON.stringify({ action: actionMap[action], payload: { id } }),
       });
+      if (res.ok) {
+        appt.status = action === 'confirm' ? 'confirmed' 
+          : action === 'reject' ? 'rejected' 
+          : 'cancelled';
+        renderAppts();
+        renderMiniCal();
+        showSave(true);
+      }
     });
-  }
-
-  function escHtml(str: string): string {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // ── Override form ────────────────────────────────────────────────────────
-  document.getElementById('override-type')!.addEventListener('change', (e) => {
-    const val = (e.target as HTMLSelectElement).value;
-    document.getElementById('custom-slots-input')!.style.display = val === 'custom' ? 'block' : 'none';
   });
+}
 
-  document.getElementById('apply-override')!.addEventListener('click', async () => {
-    const date = (document.getElementById('override-date') as HTMLInputElement).value;
-    const type = (document.getElementById('override-type') as HTMLSelectElement).value;
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    apptFilter = (btn as HTMLElement).dataset.filter as any;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderAppts();
+  });
+});
 
-    if (!date) { showFeedback('Bitte Datum wählen.', 'error'); return; }
+// ── Helpers ─────────────────────────────────────────────────────────
+function formatDate(ds: string) {
+  const [y, m, d] = ds.split('-').map(Number);
+  return `${d}. ${MONTHS[m-1]} ${y}`;
+}
 
-    if (type === 'block') {
-      await apiPost('blockDate', { date });
-    } else if (type === 'unblock') {
-      await apiPost('unblockDate', { date });
-      await apiPost('removeOverride', { date });
-    } else if (type === 'custom') {
-      const s1 = (document.getElementById('ov-start1') as HTMLInputElement).value;
-      const e1 = (document.getElementById('ov-end1') as HTMLInputElement).value;
-      const s2 = (document.getElementById('ov-start2') as HTMLInputElement).value;
-      const e2 = (document.getElementById('ov-end2') as HTMLInputElement).value;
-      const slots = [{ start: s1, end: e1 }];
-      if (s2 && e2) slots.push({ start: s2, end: e2 });
-      await apiPost('setOverride', { date, enabled: true, slots });
+function esc(s: string) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Auto-login check
+(async () => {
+  const savedPw = sessionStorage.getItem('admin_pw');
+  if (savedPw) {
+    const res = await fetch('/api/admin/slots', { headers: { 'x-admin-password': savedPw } });
+    if (res.ok) {
+      pw = savedPw;
+      const data = await res.json();
+      cfg = data.config; appts = data.appointments;
+      loginScreen.style.display = 'none';
+      adminShell.style.display = 'block';
+      renderAll();
+      return;
     }
-
-    renderOverridesList();
-  });
-
-  // ── Duration ─────────────────────────────────────────────────────────────
-  document.getElementById('save-duration')!.addEventListener('click', async () => {
-    const val = (document.getElementById('duration-select') as HTMLSelectElement).value;
-    await apiPost('setDuration', { minutes: parseInt(val) });
-  });
+  }
+  loginScreen.style.display = 'flex';
+})();
 </script>
