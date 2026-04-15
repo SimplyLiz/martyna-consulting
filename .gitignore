@@ -6,7 +6,4 @@ dist/
 .vercel
 data/pageviews.json
 .DS_Store
-.ckb/ckb.db
-.ckb/ckb.db-shm
-.ckb/ckb.db-wal
-.ckb/logs/api.log
+.ckb/
