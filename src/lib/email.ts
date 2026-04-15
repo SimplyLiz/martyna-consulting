@@ -1,4 +1,7 @@
 import { Resend } from 'resend';
+import { marked } from 'marked';
+
+marked.setOptions({ gfm: true, breaks: true });
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM_EMAIL = 'Claritas AI Consulting <noreply@claritas-ai.de>';
@@ -102,6 +105,98 @@ export async function sendMessageEmail(appt: Appointment): Promise<void> {
         <p><a href="https://claritas-ai.de/kontakt" style="color: #c89b4a;">Rückfragen</a></p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 2rem 0;">
         <p style="font-size: 0.8rem; color: #888;">Claritas AI Consulting</p>
+      </div>
+    `,
+  });
+}
+
+type Lang = 'de' | 'en' | 'pl';
+
+interface Subscriber {
+  id: string;
+  email: string;
+  language: Lang;
+  token: string;
+}
+
+interface Newsletter {
+  id: string;
+  subject: { de: string; en: string; pl: string };
+  body: { de: string; en: string; pl: string };
+}
+
+const SITE_URL = process.env.PUBLIC_SITE_URL || 'https://claritas-ai.de';
+
+const UNSUBSCRIBE_LABEL: Record<Lang, string> = {
+  de: 'Abmelden',
+  en: 'Unsubscribe',
+  pl: 'Wypisz się',
+};
+
+function renderNewsletterHtml(subject: string, body: string, lang: Lang, token: string): string {
+  const rendered = marked.parse(body, { async: false }) as string;
+  const url = `${SITE_URL}/newsletter/unsubscribe?token=${encodeURIComponent(token)}`;
+  return `
+    <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; padding: 2rem; color: #222;">
+      <h1 style="font-family: Georgia, serif; color: #c89b4a; font-weight: 400; font-size: 1.6rem; margin: 0 0 1.5rem;">${subject}</h1>
+      <div class="nl-content" style="font-size: 1rem; line-height: 1.7;">${rendered}</div>
+      <hr style="border: none; border-top: 1px solid #eee; margin: 2.5rem 0 1rem;">
+      <p style="font-size: 0.75rem; color: #888;">
+        Claritas AI Consulting ·
+        <a href="${url}" style="color: #888;">${UNSUBSCRIBE_LABEL[lang]}</a>
+      </p>
+    </div>
+  `;
+}
+
+export async function sendNewsletterToSubscriber(sub: Subscriber, nl: Newsletter): Promise<void> {
+  if (!resend) return;
+  const lang = sub.language;
+  const subject = nl.subject[lang] || nl.subject.de;
+  const body = nl.body[lang] || nl.body.de;
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: sub.email,
+    subject,
+    html: renderNewsletterHtml(subject, body, lang, sub.token),
+  });
+}
+
+const CONFIRM_LABEL: Record<Lang, { subject: string; heading: string; body: string }> = {
+  de: {
+    subject: 'Willkommen beim Claritas Newsletter',
+    heading: 'Willkommen,',
+    body: 'vielen Dank für Ihr Abonnement. Sie erhalten künftig unseren Newsletter zu EU AI Act, DSGVO und KI-Governance.',
+  },
+  en: {
+    subject: 'Welcome to the Claritas Newsletter',
+    heading: 'Welcome,',
+    body: 'thank you for subscribing. You will receive our newsletter on EU AI Act, GDPR and AI governance.',
+  },
+  pl: {
+    subject: 'Witamy w newsletterze Claritas',
+    heading: 'Witamy,',
+    body: 'dziękujemy za subskrypcję. Będziesz otrzymywać nasz newsletter o AI Act, RODO i zarządzaniu AI.',
+  },
+};
+
+export async function sendSubscriberWelcome(sub: Subscriber): Promise<void> {
+  if (!resend) return;
+  const l = CONFIRM_LABEL[sub.language];
+  const url = `${SITE_URL}/newsletter/unsubscribe?token=${encodeURIComponent(sub.token)}`;
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: sub.email,
+    subject: l.subject,
+    html: `
+      <div style="font-family: Georgia, serif; max-width: 500px; margin: 0 auto; padding: 2rem;">
+        <h2 style="color: #c89b4a; font-weight: 400;">${l.heading}</h2>
+        <p>${l.body}</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 2rem 0;">
+        <p style="font-size: 0.75rem; color: #888;">
+          Claritas AI Consulting ·
+          <a href="${url}" style="color: #888;">${UNSUBSCRIBE_LABEL[sub.language]}</a>
+        </p>
       </div>
     `,
   });

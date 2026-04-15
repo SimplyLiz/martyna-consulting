@@ -4,6 +4,34 @@ const currentYear = new Date().getFullYear();
 
 <footer class="site-footer">
   <div class="divider"></div>
+
+  <section class="newsletter-section">
+    <div class="container newsletter-inner">
+      <div class="newsletter-lead">
+        <span class="footer-col-title">Newsletter</span>
+        <h3 class="newsletter-title">Regulatorische Updates. Prägnant.</h3>
+        <p class="newsletter-desc">
+          EU AI Act, DSGVO, KI-Governance — kuratiert von Martyna Kwiecien.
+          Keine Werbung. Jederzeit abbestellbar.
+        </p>
+      </div>
+      <form id="newsletter-form" class="newsletter-form" novalidate>
+        <div class="nl-row">
+          <input type="email" name="email" id="nl-email" placeholder="ihre@email.de" required />
+          <select name="language" id="nl-lang" aria-label="Sprache">
+            <option value="de">Deutsch</option>
+            <option value="en">English</option>
+            <option value="pl">Polski</option>
+          </select>
+          <button type="submit" class="btn btn-primary nl-submit">Abonnieren</button>
+        </div>
+        <div id="nl-feedback" class="nl-feedback"></div>
+      </form>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
   <div class="container footer-inner">
     <div class="footer-brand">
       <div class="logo-wrap">
@@ -189,7 +217,65 @@ const currentYear = new Date().getFullYear();
   }
   .linkedin-link:hover { color: var(--gold); }
 
+  /* Newsletter */
+  .newsletter-section {
+    padding: 3rem 0;
+  }
+  .newsletter-inner {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+  .newsletter-title {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 400;
+    margin: 0.75rem 0 0.75rem;
+    color: var(--text);
+  }
+  .newsletter-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 440px;
+  }
+  .newsletter-form { width: 100%; }
+  .nl-row {
+    display: grid;
+    grid-template-columns: 1fr 130px auto;
+    gap: 0.5rem;
+  }
+  .nl-row input[type="email"],
+  .nl-row select {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.75rem 0.9rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 200ms;
+  }
+  .nl-row input[type="email"]:focus,
+  .nl-row select:focus { border-color: var(--gold); }
+  .nl-submit {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+  .nl-feedback {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    min-height: 1em;
+  }
+  .nl-feedback.ok { color: #6fcf97; }
+  .nl-feedback.err { color: #eb5757; }
+
   @media (max-width: 768px) {
+    .newsletter-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+    .nl-row { grid-template-columns: 1fr; }
     .footer-inner {
       grid-template-columns: 1fr;
       gap: 2.5rem;
@@ -207,3 +293,79 @@ const currentYear = new Date().getFullYear();
     }
   }
 </style>
+
+<script>
+  const COPY: Record<string, { placeholder: string; button: string; ok: string; err: string; invalid: string }> = {
+    de: {
+      placeholder: 'ihre@email.de',
+      button: 'Abonnieren',
+      ok: 'Danke! Bitte prüfen Sie Ihr Postfach.',
+      err: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
+      invalid: 'Bitte geben Sie eine gültige E-Mail ein.',
+    },
+    en: {
+      placeholder: 'your@email.com',
+      button: 'Subscribe',
+      ok: 'Thanks! Please check your inbox.',
+      err: 'Something went wrong. Please try again.',
+      invalid: 'Please enter a valid email.',
+    },
+    pl: {
+      placeholder: 'twoj@email.pl',
+      button: 'Subskrybuj',
+      ok: 'Dziękujemy! Sprawdź swoją skrzynkę.',
+      err: 'Coś poszło nie tak. Spróbuj ponownie.',
+      invalid: 'Podaj prawidłowy adres e-mail.',
+    },
+  };
+
+  const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
+  if (form) {
+    const emailInput = document.getElementById('nl-email') as HTMLInputElement;
+    const langSelect = document.getElementById('nl-lang') as HTMLSelectElement;
+    const submitBtn = form.querySelector('.nl-submit') as HTMLButtonElement;
+    const fb = document.getElementById('nl-feedback')!;
+
+    const applyCopy = () => {
+      const c = COPY[langSelect.value] || COPY.de;
+      emailInput.placeholder = c.placeholder;
+      submitBtn.textContent = c.button;
+    };
+    langSelect.addEventListener('change', applyCopy);
+    applyCopy();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const c = COPY[langSelect.value] || COPY.de;
+      fb.className = 'nl-feedback';
+      const email = emailInput.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        fb.textContent = c.invalid;
+        fb.classList.add('err');
+        return;
+      }
+      submitBtn.disabled = true;
+      try {
+        const res = await fetch('/api/newsletter/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, language: langSelect.value }),
+        });
+        if (res.ok) {
+          fb.textContent = c.ok;
+          fb.classList.add('ok');
+          form.reset();
+          applyCopy();
+        } else {
+          fb.textContent = c.err;
+          fb.classList.add('err');
+        }
+      } catch {
+        fb.textContent = c.err;
+        fb.classList.add('err');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  }
+</script>

@@ -1,0 +1,61 @@
+---
+import Layout from '../../layouts/Layout.astro';
+const token = Astro.url.searchParams.get('token') || '';
+---
+<Layout title="Newsletter abbestellen">
+  <section class="page-hero">
+    <div class="container" style="max-width:640px;">
+      <span class="section-label">Newsletter</span>
+      <span class="gold-rule"></span>
+      <h1 style="font-size: clamp(2.2rem, 4vw, 3rem); font-weight: 300; margin-bottom: 1.5rem;">
+        Abmelden / Unsubscribe / Wypisz się
+      </h1>
+      <p style="color: var(--text-muted); margin-bottom: 2rem;">
+        Bestätigen Sie die Abmeldung vom Claritas Newsletter.<br>
+        Confirm unsubscription from the Claritas newsletter.<br>
+        Potwierdź wypisanie się z newslettera Claritas.
+      </p>
+
+      <div id="feedback"></div>
+
+      <button id="confirm-btn" class="btn btn-primary" {token ? '' : 'disabled'}>
+        Abmelden · Unsubscribe · Wypisz się
+      </button>
+    </div>
+  </section>
+</Layout>
+
+<script define:vars={{ token }}>
+  const btn = document.getElementById('confirm-btn');
+  const fb = document.getElementById('feedback');
+
+  if (!token) {
+    fb.innerHTML = '<div class="msg-error">Kein gültiger Token / Invalid token.</div>';
+  }
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    try {
+      const res = await fetch('/api/newsletter/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        fb.innerHTML = '<div class="msg-success">Sie wurden abgemeldet. · You have been unsubscribed. · Zostałeś wypisany.</div>';
+        btn.style.display = 'none';
+      } else {
+        fb.innerHTML = `<div class="msg-error">${data.error || 'Fehler'}</div>`;
+        btn.disabled = false;
+      }
+    } catch {
+      fb.innerHTML = '<div class="msg-error">Netzwerkfehler / Network error.</div>';
+      btn.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .page-hero { padding: 10rem 0 5rem; }
+</style>

@@ -1,0 +1,794 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout title="Newsletter">
+<style>
+  .nl-wrap { min-height: 100vh; padding-top: 72px; background: var(--bg); }
+
+  .login-screen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: calc(100vh - 72px);
+  }
+  .login-card {
+    width: 360px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2.5rem;
+  }
+  .login-logo {
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem;
+  }
+  .login-logo .mark {
+    width: 32px; height: 32px;
+    border: 1px solid var(--gold);
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 1.2rem; color: var(--gold);
+  }
+  .login-logo span {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .login-card h2 { font-size: 1.4rem; margin-bottom: 1.5rem; }
+
+  .nl-shell { display: none; }
+
+  .nl-topbar {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    padding: 0 2rem; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 72px; z-index: 10;
+  }
+  .topbar-left {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .topbar-left span { color: var(--gold); }
+  .topbar-left a { color: var(--text-muted); text-decoration: none; transition: color 200ms; }
+  .topbar-left a:hover, .topbar-left a.active { color: var(--gold); }
+  .topbar-right { display: flex; align-items: center; gap: 1rem; }
+  .save-indicator { font-size: 0.75rem; color: var(--text-subtle); }
+  .save-indicator.saved { color: #6fcf97; }
+  .save-indicator.error { color: #eb5757; }
+  .logout-btn {
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    background: none; border: 1px solid var(--border); color: var(--text-muted);
+    padding: 0.4rem 0.9rem; border-radius: 2px; cursor: pointer;
+    font-family: var(--font-body); transition: all 200ms;
+  }
+  .logout-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .nl-body {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .panel-head {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .panel-head h3 {
+    font-family: var(--font-body);
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gold);
+  }
+  .panel-body { padding: 1.5rem; }
+
+  .lang-tabs { display: flex; gap: 0.35rem; }
+  .lang-tab {
+    font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase;
+    background: none; border: 1px solid var(--border); color: var(--text-muted);
+    padding: 0.3rem 0.75rem; border-radius: 2px; cursor: pointer;
+    font-family: var(--font-body); transition: all 200ms;
+  }
+  .lang-tab.active { border-color: var(--gold); color: var(--gold); }
+
+  .editor-field { margin-bottom: 1.25rem; }
+  .editor-field label {
+    display: block;
+    font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-subtle); margin-bottom: 0.5rem;
+  }
+  .editor-field input, .editor-field textarea {
+    width: 100%;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.75rem 0.9rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 200ms;
+  }
+  .editor-field textarea {
+    min-height: 240px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+  .editor-field input:focus, .editor-field textarea:focus { border-color: var(--gold); }
+
+  .editor-actions {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin-top: 1rem; padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    align-items: center;
+  }
+  .editor-actions .spacer { flex: 1; }
+  .schedule-group { display: flex; gap: 0.4rem; }
+  .sched-input {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.5rem 0.7rem;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .action-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.9rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 200ms;
+  }
+  .action-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .action-btn.primary {
+    background: var(--gold); border-color: var(--gold); color: var(--bg); font-weight: 500;
+  }
+  .action-btn.primary:hover { background: var(--gold); filter: brightness(1.1); }
+  .action-btn.danger:hover { border-color: #eb5757; color: #eb5757; }
+
+  .nl-list { display: flex; flex-direction: column; }
+  .nl-item {
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 150ms;
+  }
+  .nl-item:last-child { border-bottom: none; }
+  .nl-item:hover { background: var(--bg-surface); }
+  .nl-item.active { background: var(--bg-surface); border-left: 2px solid var(--gold); padding-left: calc(1.25rem - 2px); }
+
+  .nl-item-subj {
+    font-size: 0.88rem;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .nl-item-meta {
+    font-size: 0.7rem; color: var(--text-subtle);
+    display: flex; gap: 0.5rem; align-items: center;
+  }
+  .badge {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+  }
+  .badge.draft { color: var(--text-subtle); }
+  .badge.scheduled { color: #f2c94c; border-color: #f2c94c; }
+  .badge.sending { color: #56ccf2; border-color: #56ccf2; }
+  .badge.sent { color: #6fcf97; border-color: #6fcf97; }
+
+  .sub-row {
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.82rem;
+  }
+  .sub-row:last-child { border-bottom: none; }
+  .sub-email {
+    color: var(--text);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .sub-lang {
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 0.12rem 0.45rem;
+    border: 1px solid var(--gold);
+    border-radius: 2px;
+  }
+  .sub-remove {
+    background: none; border: none;
+    color: var(--text-subtle);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 0.3rem;
+    transition: color 150ms;
+  }
+  .sub-remove:hover { color: #eb5757; }
+
+  .empty-note {
+    padding: 2rem 0;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-subtle);
+  }
+
+  .stats-mini {
+    display: flex; gap: 1.25rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-mini { font-size: 0.75rem; color: var(--text-muted); }
+  .stat-mini strong { color: var(--gold); font-size: 1rem; display: block; font-family: var(--font-display); font-weight: 400; }
+
+  .hint { font-size: 0.7rem; color: var(--text-subtle); }
+  .hint code {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    padding: 0.05rem 0.3rem;
+    border-radius: 2px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+  }
+
+  .md-preview {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 1.25rem 1.4rem;
+    min-height: 240px;
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .md-preview h1, .md-preview h2, .md-preview h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: var(--gold);
+    margin: 1.25rem 0 0.5rem;
+  }
+  .md-preview h1:first-child, .md-preview h2:first-child, .md-preview h3:first-child { margin-top: 0; }
+  .md-preview p { margin: 0 0 1rem; }
+  .md-preview a { color: var(--gold); }
+  .md-preview ul, .md-preview ol { margin: 0 0 1rem 1.25rem; }
+  .md-preview blockquote {
+    border-left: 2px solid var(--gold);
+    padding-left: 1rem;
+    color: var(--text-muted);
+    margin: 1rem 0;
+  }
+  .md-preview code {
+    background: var(--bg-card);
+    padding: 0.1rem 0.35rem;
+    border-radius: 2px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.85em;
+  }
+  .md-preview pre {
+    background: var(--bg-card);
+    padding: 0.9rem;
+    border-radius: 2px;
+    overflow-x: auto;
+  }
+  .md-preview pre code { background: none; padding: 0; }
+  .md-preview hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+  @media (max-width: 960px) {
+    .nl-body { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="nl-wrap">
+
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="mark">C</div>
+        <span>Admin · Newsletter</span>
+      </div>
+      <h2>Anmeldung</h2>
+      <div class="form-group">
+        <label for="pw">Passwort</label>
+        <input type="password" id="pw" autocomplete="current-password" />
+      </div>
+      <p id="login-err" style="display:none;margin-top:0.5rem;font-size:0.82rem;color:#eb5757;"></p>
+      <button id="login-btn" class="btn btn-primary" style="margin-top:1.25rem;width:100%;justify-content:center;">
+        Anmelden
+      </button>
+    </div>
+  </div>
+
+  <div class="nl-shell" id="nl-shell">
+    <div class="nl-topbar">
+      <div class="topbar-left">
+        <span>Claritas</span> ·
+        <a href="/admin">Termine</a> ·
+        <a href="/admin/metrics">Metrics</a> ·
+        <a href="/admin/newsletter" class="active">Newsletter</a>
+      </div>
+      <div class="topbar-right">
+        <span class="save-indicator" id="save-indicator"></span>
+        <button class="logout-btn" id="logout-btn">Abmelden</button>
+      </div>
+    </div>
+
+    <div class="nl-body">
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3 id="editor-title">Neuer Newsletter</h3>
+          <div class="lang-tabs" id="lang-tabs">
+            <button class="lang-tab active" data-lang="de">DE</button>
+            <button class="lang-tab" data-lang="en">EN</button>
+            <button class="lang-tab" data-lang="pl">PL</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="editor-field">
+            <label for="subject-input">Betreff</label>
+            <input type="text" id="subject-input" placeholder="Newsletter-Betreff" />
+          </div>
+          <div class="editor-field">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+              <label for="body-input" style="margin:0;">Inhalt (Markdown)</label>
+              <div class="lang-tabs">
+                <button type="button" class="lang-tab active" id="edit-mode-btn">Bearbeiten</button>
+                <button type="button" class="lang-tab" id="preview-mode-btn">Vorschau</button>
+              </div>
+            </div>
+            <textarea id="body-input" placeholder="# Überschrift&#10;&#10;Absatz mit **fett**, *kursiv*, [Link](https://...).&#10;&#10;- Listenpunkt&#10;- Noch einer"></textarea>
+            <div id="body-preview" class="md-preview" style="display:none;"></div>
+            <p class="hint" style="margin-top:0.5rem;">
+              Markdown unterstützt: <code>#</code> Überschriften, <code>**fett**</code>, <code>*kursiv*</code>,
+              <code>[Text](URL)</code>, Listen (<code>-</code>), Zitate (<code>&gt;</code>), Code-Blöcke.
+            </p>
+          </div>
+
+          <div class="editor-actions">
+            <button class="action-btn" id="new-btn">+ Neu</button>
+            <button class="action-btn danger" id="delete-btn" style="display:none;">Löschen</button>
+            <div class="spacer"></div>
+            <button class="action-btn" id="save-btn">Für später speichern</button>
+            <div class="schedule-group">
+              <input type="datetime-local" class="sched-input" id="sched-input" />
+              <button class="action-btn" id="schedule-btn">Planen</button>
+            </div>
+            <button class="action-btn" id="unschedule-btn" style="display:none;">Planung aufheben</button>
+            <button class="action-btn primary" id="send-now-btn">Jetzt senden</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:2rem;">
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Newsletter</h3>
+          </div>
+          <div class="nl-list" id="nl-list"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Abonnenten</h3>
+          </div>
+          <div class="stats-mini" id="sub-stats"></div>
+          <div class="panel-body" style="padding-top:0.5rem;max-height:360px;overflow-y:auto;">
+            <div id="sub-list"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</Layout>
+
+<script>
+import { marked } from 'marked';
+marked.setOptions({ gfm: true, breaks: true });
+
+type Lang = 'de' | 'en' | 'pl';
+
+interface Newsletter {
+  id: string;
+  subject: { de: string; en: string; pl: string };
+  body: { de: string; en: string; pl: string };
+  status: 'draft' | 'scheduled' | 'sending' | 'sent';
+  scheduledFor?: string;
+  createdAt: string;
+  updatedAt: string;
+  sentAt?: string;
+  recipientCount?: number;
+}
+
+interface Subscriber {
+  id: string;
+  email: string;
+  language: Lang;
+  subscribedAt: string;
+  status: 'active' | 'unsubscribed';
+}
+
+let pw = '';
+let newsletters: Newsletter[] = [];
+let subscribers: Subscriber[] = [];
+let currentId: string | null = null;
+let currentLang: Lang = 'de';
+let draft: { subject: { de: string; en: string; pl: string }; body: { de: string; en: string; pl: string } } = {
+  subject: { de: '', en: '', pl: '' },
+  body: { de: '', en: '', pl: '' },
+};
+
+const loginScreen = document.getElementById('login-screen')!;
+const shell = document.getElementById('nl-shell')!;
+const loginErr = document.getElementById('login-err')!;
+
+async function tryLogin() {
+  const val = (document.getElementById('pw') as HTMLInputElement).value;
+  const res = await fetch('/api/admin/newsletter', { headers: { 'x-admin-password': val } });
+  if (res.ok) {
+    pw = val;
+    sessionStorage.setItem('admin_pw', val);
+    const data = await res.json();
+    newsletters = data.newsletters || [];
+    subscribers = data.subscribers || [];
+    loginScreen.style.display = 'none';
+    shell.style.display = 'block';
+    renderAll();
+  } else {
+    loginErr.textContent = 'Falsches Passwort.';
+    loginErr.style.display = 'block';
+  }
+}
+
+(document.getElementById('login-btn') as HTMLButtonElement).addEventListener('click', tryLogin);
+(document.getElementById('pw') as HTMLInputElement).addEventListener('keydown', e => {
+  if (e.key === 'Enter') tryLogin();
+});
+
+// Autologin if password already in session
+const stored = sessionStorage.getItem('admin_pw');
+if (stored) {
+  (document.getElementById('pw') as HTMLInputElement).value = stored;
+  tryLogin();
+}
+
+document.getElementById('logout-btn')!.addEventListener('click', () => {
+  pw = '';
+  sessionStorage.removeItem('admin_pw');
+  shell.style.display = 'none';
+  loginScreen.style.display = 'flex';
+});
+
+async function api(action: string, payload: object) {
+  const res = await fetch('/api/admin/newsletter', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': pw },
+    body: JSON.stringify({ action, payload }),
+  });
+  const data = await res.json();
+  showSave(res.ok);
+  return { ok: res.ok, data };
+}
+
+function showSave(ok: boolean) {
+  const el = document.getElementById('save-indicator')!;
+  el.textContent = ok ? 'Gespeichert ✓' : 'Fehler';
+  el.className = 'save-indicator ' + (ok ? 'saved' : 'error');
+  setTimeout(() => { el.textContent = ''; el.className = 'save-indicator'; }, 2500);
+}
+
+async function reload() {
+  const res = await fetch('/api/admin/newsletter', { headers: { 'x-admin-password': pw } });
+  if (res.ok) {
+    const data = await res.json();
+    newsletters = data.newsletters || [];
+    subscribers = data.subscribers || [];
+    renderAll();
+  }
+}
+
+function renderAll() {
+  renderList();
+  renderSubscribers();
+  renderEditor();
+}
+
+function fmtDate(iso?: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function renderList() {
+  const el = document.getElementById('nl-list')!;
+  if (newsletters.length === 0) {
+    el.innerHTML = '<div class="empty-note">Noch keine Newsletter</div>';
+    return;
+  }
+  el.innerHTML = newsletters.map(n => {
+    const subj = n.subject.de || n.subject.en || n.subject.pl || '(ohne Betreff)';
+    let meta = '';
+    if (n.status === 'scheduled' && n.scheduledFor) meta = `→ ${fmtDate(n.scheduledFor)}`;
+    else if (n.status === 'sent' && n.sentAt) meta = `${fmtDate(n.sentAt)} · ${n.recipientCount ?? 0} Empfänger`;
+    else meta = fmtDate(n.updatedAt);
+    return `
+      <div class="nl-item ${currentId === n.id ? 'active' : ''}" data-id="${n.id}">
+        <div class="nl-item-subj">${escapeHtml(subj)}</div>
+        <div class="nl-item-meta">
+          <span class="badge ${n.status}">${n.status}</span>
+          <span>${escapeHtml(meta)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+  el.querySelectorAll('.nl-item').forEach(item => {
+    item.addEventListener('click', () => {
+      loadIntoEditor((item as HTMLElement).dataset.id!);
+    });
+  });
+}
+
+function renderSubscribers() {
+  const active = subscribers.filter(s => s.status === 'active');
+  const byLang = { de: 0, en: 0, pl: 0 } as Record<Lang, number>;
+  active.forEach(s => { byLang[s.language]++; });
+
+  document.getElementById('sub-stats')!.innerHTML = `
+    <div class="stat-mini"><strong>${active.length}</strong>Aktiv</div>
+    <div class="stat-mini"><strong>${byLang.de}</strong>DE</div>
+    <div class="stat-mini"><strong>${byLang.en}</strong>EN</div>
+    <div class="stat-mini"><strong>${byLang.pl}</strong>PL</div>
+  `;
+
+  const list = document.getElementById('sub-list')!;
+  if (active.length === 0) {
+    list.innerHTML = '<div class="empty-note">Noch keine Abonnenten</div>';
+    return;
+  }
+  list.innerHTML = active.map(s => `
+    <div class="sub-row">
+      <span class="sub-email">${escapeHtml(s.email)}</span>
+      <span class="sub-lang">${s.language}</span>
+      <button class="sub-remove" data-id="${s.id}" title="Abmelden">×</button>
+    </div>
+  `).join('');
+  list.querySelectorAll('.sub-remove').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = (e.currentTarget as HTMLElement).dataset.id!;
+      if (!confirm('Abonnent entfernen?')) return;
+      await api('removeSubscriber', { id });
+      await reload();
+    });
+  });
+}
+
+function loadIntoEditor(id: string) {
+  const n = newsletters.find(x => x.id === id);
+  if (!n) return;
+  currentId = id;
+  draft = { subject: { ...n.subject }, body: { ...n.body } };
+  renderEditor();
+  renderList();
+}
+
+function newDraft() {
+  currentId = null;
+  draft = { subject: { de: '', en: '', pl: '' }, body: { de: '', en: '', pl: '' } };
+  renderEditor();
+  renderList();
+}
+
+function renderEditor() {
+  const subjInput = document.getElementById('subject-input') as HTMLInputElement;
+  const bodyInput = document.getElementById('body-input') as HTMLTextAreaElement;
+  subjInput.value = draft.subject[currentLang];
+  bodyInput.value = draft.body[currentLang];
+
+  const n = currentId ? newsletters.find(x => x.id === currentId) : null;
+  const isSent = n?.status === 'sent';
+  const isSending = n?.status === 'sending';
+  const isScheduled = n?.status === 'scheduled';
+
+  (document.getElementById('editor-title') as HTMLElement).textContent =
+    n ? `Bearbeiten · ${n.status}` : 'Neuer Newsletter';
+
+  const readOnly = !!(isSent || isSending);
+  subjInput.disabled = readOnly;
+  bodyInput.disabled = readOnly;
+
+  const editable = !readOnly;
+  (document.getElementById('save-btn') as HTMLButtonElement).style.display = editable ? '' : 'none';
+  (document.getElementById('delete-btn') as HTMLButtonElement).style.display = (n && !isSent) ? '' : 'none';
+  (document.querySelector('.schedule-group') as HTMLElement).style.display = (editable && !isScheduled) ? '' : 'none';
+  (document.getElementById('unschedule-btn') as HTMLButtonElement).style.display = isScheduled ? '' : 'none';
+  (document.getElementById('send-now-btn') as HTMLButtonElement).style.display = editable ? '' : 'none';
+
+  const schedInput = document.getElementById('sched-input') as HTMLInputElement;
+  if (isScheduled && n?.scheduledFor) {
+    const d = new Date(n.scheduledFor);
+    const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    schedInput.value = iso;
+  }
+}
+
+function syncFromInputs() {
+  const subjInput = document.getElementById('subject-input') as HTMLInputElement;
+  const bodyInput = document.getElementById('body-input') as HTMLTextAreaElement;
+  draft.subject[currentLang] = subjInput.value;
+  draft.body[currentLang] = bodyInput.value;
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+}
+
+// Language tabs (only the ones with data-lang)
+document.querySelectorAll('.lang-tab[data-lang]').forEach(tab => {
+  tab.addEventListener('click', () => {
+    syncFromInputs();
+    document.querySelectorAll('.lang-tab[data-lang]').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentLang = (tab as HTMLElement).dataset.lang as Lang;
+    renderEditor();
+    if (previewMode) renderPreview();
+  });
+});
+
+// Edit / Preview toggle
+let previewMode = false;
+const editModeBtn = document.getElementById('edit-mode-btn') as HTMLButtonElement;
+const previewModeBtn = document.getElementById('preview-mode-btn') as HTMLButtonElement;
+const bodyTextarea = document.getElementById('body-input') as HTMLTextAreaElement;
+const bodyPreview = document.getElementById('body-preview') as HTMLDivElement;
+
+function renderPreview() {
+  const md = draft.body[currentLang] || '';
+  bodyPreview.innerHTML = marked.parse(md, { async: false }) as string;
+}
+
+editModeBtn.addEventListener('click', () => {
+  previewMode = false;
+  editModeBtn.classList.add('active');
+  previewModeBtn.classList.remove('active');
+  bodyTextarea.style.display = '';
+  bodyPreview.style.display = 'none';
+});
+
+previewModeBtn.addEventListener('click', () => {
+  syncFromInputs();
+  previewMode = true;
+  previewModeBtn.classList.add('active');
+  editModeBtn.classList.remove('active');
+  bodyTextarea.style.display = 'none';
+  bodyPreview.style.display = 'block';
+  renderPreview();
+});
+
+// Input persistence
+(document.getElementById('subject-input') as HTMLInputElement).addEventListener('input', syncFromInputs);
+(document.getElementById('body-input') as HTMLTextAreaElement).addEventListener('input', syncFromInputs);
+
+// Buttons
+document.getElementById('new-btn')!.addEventListener('click', newDraft);
+
+document.getElementById('save-btn')!.addEventListener('click', async () => {
+  syncFromInputs();
+  if (!currentId) {
+    const { ok, data } = await api('create', draft);
+    if (ok && data.newsletter) {
+      currentId = data.newsletter.id;
+      await reload();
+    }
+  } else {
+    await api('update', { id: currentId, ...draft });
+    await reload();
+  }
+});
+
+document.getElementById('delete-btn')!.addEventListener('click', async () => {
+  if (!currentId) return;
+  if (!confirm('Newsletter löschen?')) return;
+  await api('delete', { id: currentId });
+  currentId = null;
+  newDraft();
+  await reload();
+});
+
+document.getElementById('schedule-btn')!.addEventListener('click', async () => {
+  syncFromInputs();
+  const schedVal = (document.getElementById('sched-input') as HTMLInputElement).value;
+  if (!schedVal) { alert('Bitte Datum + Uhrzeit angeben.'); return; }
+  if (!draft.subject.de && !draft.subject.en && !draft.subject.pl) {
+    alert('Bitte mindestens einen Betreff angeben.');
+    return;
+  }
+  const when = new Date(schedVal);
+  const active = subscribers.filter(s => s.status === 'active').length;
+  const msg = `Newsletter planen für ${when.toLocaleString('de-DE')}?\n\nWird an ${active} Abonnenten gesendet.`;
+  if (!confirm(msg)) return;
+  let id = currentId;
+  if (!id) {
+    const { ok, data } = await api('create', draft);
+    if (!ok) return;
+    id = data.newsletter.id;
+    currentId = id;
+  } else {
+    await api('update', { id, ...draft });
+  }
+  const res = await api('schedule', { id, scheduledFor: when.toISOString() });
+  if (!res.ok) alert(res.data.error || 'Fehler');
+  await reload();
+});
+
+document.getElementById('unschedule-btn')!.addEventListener('click', async () => {
+  if (!currentId) return;
+  await api('unschedule', { id: currentId });
+  await reload();
+});
+
+document.getElementById('send-now-btn')!.addEventListener('click', async () => {
+  syncFromInputs();
+  if (!draft.subject.de && !draft.subject.en && !draft.subject.pl) {
+    alert('Bitte mindestens einen Betreff angeben.');
+    return;
+  }
+  const active = subscribers.filter(s => s.status === 'active').length;
+  if (!confirm(`Newsletter JETZT an ${active} Abonnenten senden?\n\nDies kann nicht rückgängig gemacht werden.`)) return;
+  if (!confirm('Sind Sie sicher?')) return;
+  let id = currentId;
+  if (!id) {
+    const { ok, data } = await api('create', draft);
+    if (!ok) return;
+    id = data.newsletter.id;
+    currentId = id;
+  } else {
+    await api('update', { id, ...draft });
+  }
+  const btn = document.getElementById('send-now-btn') as HTMLButtonElement;
+  btn.disabled = true;
+  btn.textContent = 'Sende...';
+  const res = await api('sendNow', { id });
+  btn.disabled = false;
+  btn.textContent = 'Jetzt senden';
+  if (!res.ok) {
+    alert(res.data.error || 'Fehler beim Senden');
+  } else {
+    alert(`Versendet an ${res.data.newsletter.recipientCount ?? 0} Empfänger.`);
+  }
+  await reload();
+});
+</script>

@@ -33,6 +33,8 @@ async function seedIfMissing(filename: string) {
       const defaults: Record<string, string> = {
         'appointments.json': '[]',
         'contacts.ndjson': '',
+        'subscribers.json': '[]',
+        'newsletters.json': '[]',
       };
       if (filename in defaults) {
         await writeFile(target, defaults[filename], 'utf-8');
